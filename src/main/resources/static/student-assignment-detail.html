@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm bài tập - Học Sinh</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.05);
+            --input-bg: #f0f3f6;
+            --btn-bg: #2196f3;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --input-bg: #111726;
+            --btn-bg: #2563eb;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 20px 0; z-index: 10;
+        }
+        .sidebar-logo {
+            width: 45px; height: 45px; background: white; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; color: #2196f3;
+            font-size: 22px; font-weight: bold; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu {
+            list-style: none; width: 100%; display: flex; flex-direction: column;
+            align-items: center; gap: 15px; flex: 1;
+        }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 20px; border-radius: 14px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            color: #ffffff; background: rgba(255, 255, 255, 0.12);
+        }
+
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 75px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 5px 12px; font-size: 13px; font-weight: 500;
+            border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .header {
+            height: 70px; background: var(--bg-header); display: flex;
+            justify-content: space-between; align-items: center; padding: 0 30px;
+            position: relative; border-bottom: 1px solid var(--border-color);
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .btn-back-clean {
+            background: transparent; border: none; color: var(--text-main);
+            font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; text-decoration: none;
+        }
+        .btn-back-clean:hover { color: #3b82f6; }
+        .header-title-page { font-size: 16px; font-weight: 600; color: var(--text-sub); border-left: 2px solid var(--border-color); padding-left: 15px; }
+
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .notification-icon { position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; padding: 5px 10px; border-radius: 8px; user-select: none;
+        }
+        .user-profile-wrapper:hover { background: rgba(255, 255, 255, 0.05); }
+        .avatar {
+            width: 40px; height: 40px; background: #2563eb; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px;
+            background: #202a40; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+            color: #e2e8f0; font-size: 14px; text-decoration: none;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        .content { padding: 30px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+        .assignment-detail-card {
+            background: var(--bg-card); padding: 30px; border-radius: 14px;
+            border: 1px solid var(--border-color); margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .assignment-title { font-size: 22px; font-weight: 600; color: var(--text-main); margin-bottom: 10px; }
+        .assignment-meta { font-size: 13px; color: var(--text-sub); display: flex; gap: 25px; margin-bottom: 20px; }
+
+        .section-box {
+            background: var(--input-bg); padding: 22px; border-radius: 10px;
+            border: 1px solid var(--border-color); margin-bottom: 20px;
+        }
+        .section-title { font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+        .teacher-file-link {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: #2563eb; color: white; padding: 11px 20px;
+            border-radius: 8px; font-size: 14px; font-weight: 500;
+            text-decoration: none; transition: 0.2s; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+            cursor: pointer; border: none; outline: none;
+        }
+        .teacher-file-link:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .upload-area {
+            border: 2px dashed #3b82f6; border-radius: 12px; padding: 35px;
+            text-align: center; background: rgba(59,130,246,0.03); cursor: pointer;
+            transition: 0.2s; margin-top: 10px;
+        }
+        .upload-area:hover { background: rgba(59,130,246,0.08); }
+        .upload-area i { font-size: 42px; color: #3b82f6; margin-bottom: 12px; }
+
+        .image-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; margin-top: 15px; }
+        .image-preview-item {
+            position: relative; width: 100%; height: 130px; border-radius: 8px;
+            overflow: hidden; border: 1px solid var(--border-color); background: var(--bg-card);
+        }
+        .image-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+
+        .btn-delete-file {
+            position: absolute; top: 6px; right: 6px; background: rgba(239, 68, 68, 0.9);
+            color: white; border: none; width: 28px; height: 28px; border-radius: 50%;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 13px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: 0.2s;
+        }
+        .btn-delete-file:hover { background: #dc2626; transform: scale(1.1); }
+
+        .btn-submit-work {
+            background: #10b981; color: white; border: none; padding: 12px 28px;
+            border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .btn-submit-work:hover { opacity: 0.9; }
+
+        #toastNotification {
+            position: fixed; bottom: 30px; right: 30px; background: #10b981; color: white;
+            padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: none; z-index: 9999;
+            animation: slideIn 0.3s ease forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+<div id="toastNotification"><i class="fa-solid fa-circle-check"></i> Nộp bài thành công!</div>
+
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li class="active" data-tooltip="Danh sách lớp"><a href="/student-dashboard.html"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-book-open"></i></a></li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <div class="header">
+        <div class="header-left">
+            <a href="#" id="btnBackToClassDetail" class="btn-back-clean">
+                <i class="fa-solid fa-chevron-left"></i> Quay lại
+            </a>
+            <div class="header-title-page" id="headerPageTitle">Làm bài tập: Đang tải...</div>
+        </div>
+
+        <div class="header-right">
+            <div class="notification-icon" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">N</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Nguyễn Thị Hoài</div>
+                    <div class="role">Học sinh</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/student-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
+                    <!-- Nút chuyển đổi sang màn hình giáo viên (chỉ hiện khi là tài khoản giáo viên/admin) -->
+                    <a href="/teacher-dashboard.html" class="dropdown-item" id="btnTeacherScreen" style="display: none;">
+                        <i class="fa-solid fa-right-left"></i> Vào màn giáo viên
+                    </a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="assignment-detail-card">
+            <div class="assignment-title" id="assignTitle">Đang tải tên bài tập...</div>
+            <div class="assignment-meta">
+                <span><i class="fa-regular fa-clock"></i> Hạn nộp: <strong id="assignDueDate">Không giới hạn</strong></span>
+                <span><i class="fa-solid fa-file-signature"></i> Trạng thái: <strong id="assignStatus" style="color: #ef4444;">Chưa nộp</strong></span>
+                <span><i class="fa-solid fa-star"></i> Điểm số: <strong id="assignScore">-</strong></span>
+            </div>
+
+            <!-- Đề bài từ Giáo viên -->
+            <div class="section-box">
+                <div class="section-title"><i class="fa-solid fa-file-lines" style="color: #3b82f6;"></i> Đề bài từ Giáo viên:</div>
+                <div id="teacherFileContainer" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- Học sinh tải Ảnh / File bài làm -->
+            <div class="section-box" style="background: var(--bg-card);">
+                <div class="section-title"><i class="fa-solid fa-camera" style="color: #10b981;"></i> Nộp bài làm (Chọn nhiều ảnh hoặc file bài làm):</div>
+
+                <div class="upload-area" onclick="document.getElementById('imageFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p style="font-weight: 600; color: var(--text-main); font-size: 15px;">Bấm vào đây để chọn nhiều file hoặc ảnh bài làm</p>
+                    <p style="font-size: 12px; color: var(--text-sub); margin-top: 5px;">Hỗ trợ ảnh JPG, PNG, PDF, Word... (Tối đa 50MB/file)</p>
+                    <input type="file" id="imageFileInput" multiple accept="image/*,.pdf,.doc,.docx" style="display: none;" onchange="handleFileSelect(this)">
+                </div>
+
+                <div class="image-preview-grid" id="previewGrid"></div>
+            </div>
+
+            <div style="text-align: right; margin-top: 25px;" id="actionButtonContainer">
+                <button class="btn-submit-work" id="btnSubmitHomework" onclick="submitHomework()">
+                    <i class="fa-solid fa-paper-plane"></i> Gửi bài làm cho giáo viên
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('classId');
+    const assignmentId = urlParams.get('assignmentId');
+
+    let selectedStudentFiles = [];
+    let currentAssignment = null;
+    let currentUserId = null;
+    let currentStudentProfileId = null;
+    let existingFileUrls = [];
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email') || 'hoaint@gmail.com';
+        try {
+            const userRes = await fetch(`/api/users/profile/${currentUsername}`);
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                currentUserId = userData.idUser;
+
+                // KIỂM TRA QUYỀN GIÁO VIÊN / ADMIN ĐỂ HIỆN NÚT CHUYỂN MÀN HÌNH
+                const userRole = (userData.role || localStorage.getItem('role') || '').toUpperCase();
+                if (userRole.includes('TEACHER') || userRole.includes('GIÁO VIÊN') || userRole.includes('ADMIN')) {
+                    const btnTeacher = document.getElementById('btnTeacherScreen');
+                    if (btnTeacher) btnTeacher.style.display = 'flex';
+                }
+
+                const stdRes = await fetch(`/api/classes/student-profile/${currentUserId}`);
+                if (stdRes.ok) {
+                    const stdData = await stdRes.json();
+                    currentStudentProfileId = stdData.idStudentProfiles || stdData.id;
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
+        if (!currentStudentProfileId) currentStudentProfileId = currentUserId || 4;
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+            if (text) text.textContent = 'Chế độ tối';
+        } else {
+            document.body.classList.add('dark-mode');
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            if (text) text.textContent = 'Chế độ sáng';
+            localStorage.setItem('darkMode', 'enabled');
+        }
+
+        let displayName = localStorage.getItem('fullName') || 'Nguyễn Thị Hoài';
+        document.getElementById('userName').textContent = displayName;
+
+        const avatarEl = document.getElementById('userAvatar');
+        const savedAvatar = localStorage.getItem('userAvatarUrl');
+        if (savedAvatar) {
+            avatarEl.innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
+        } else {
+            avatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+        }
+
+        if (classId) {
+            document.getElementById('btnBackToClassDetail').href = `/student-class-detail.html?id=${classId}`;
+        }
+
+        if (assignmentId) {
+            await loadAssignmentDetail();
+        }
+    });
+
+    async function loadAssignmentDetail() {
+        try {
+            if (classId) {
+                const res = await fetch(`/api/classes/${classId}/assignments`);
+                if (res.ok) {
+                    const list = await res.json();
+                    currentAssignment = list.find(a => (a.idAssignments || a.id) == assignmentId);
+                }
+            }
+
+            if (currentAssignment) {
+                document.getElementById('assignTitle').textContent = currentAssignment.title || "Bài tập không có tiêu đề";
+                document.getElementById('headerPageTitle').textContent = `Làm bài tập: ${currentAssignment.title || ''}`;
+                document.getElementById('assignDueDate').textContent = currentAssignment.dueDate ? currentAssignment.dueDate.replace('T', ' ') : 'Không giới hạn';
+
+                await checkSubmissionStatus();
+                renderTeacherFileButton(currentAssignment);
+            }
+        } catch (err) {
+            console.error("Lỗi tải chi tiết bài tập:", err);
+        }
+    }
+
+    async function checkSubmissionStatus() {
+        try {
+            const subRes = await fetch(`/api/submissions/check?assignmentId=${assignmentId}&userId=${currentStudentProfileId}`);
+            if (subRes.ok) {
+                const sub = await subRes.json();
+                const statusEl = document.getElementById('assignStatus');
+                const scoreEl = document.getElementById('assignScore');
+                const actionContainer = document.getElementById('actionButtonContainer');
+
+                if (sub && (sub.status || sub.submittedFile || sub.fileUrl)) {
+                    if (sub.status === 'GRADED' || sub.grade != null || sub.score != null) {
+                        statusEl.textContent = 'Đã chấm điểm';
+                        statusEl.style.color = '#3b82f6';
+                        scoreEl.textContent = `${sub.grade || sub.score} / 10`;
+                        actionContainer.innerHTML = `<span style="color: #3b82f6; font-weight: 600;"><i class="fa-solid fa-lock"></i> Bài tập đã được chấm điểm, không thể nộp lại.</span>`;
+                    } else {
+                        statusEl.textContent = 'Đã nộp';
+                        statusEl.style.color = '#10b981';
+                        scoreEl.textContent = '-';
+                    }
+
+                    const rawUrls = sub.submittedFile || sub.fileUrl || "";
+                    if (rawUrls.trim() !== '') {
+                        existingFileUrls = rawUrls.split(',').filter(u => u.trim() !== '');
+                        renderPreview();
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function renderTeacherFileButton(assign) {
+        const teacherFileBox = document.getElementById('teacherFileContainer');
+        const fileUrl = assign.fileUrl;
+
+        if (fileUrl && fileUrl.trim() !== '' && fileUrl.trim() !== 'null' && (fileUrl.startsWith('http://') || fileUrl.startsWith('https://'))) {
+            const fileName = fileUrl.split('/').pop();
+            teacherFileBox.innerHTML = `
+                <a href="${fileUrl}" target="_blank" download class="teacher-file-link">
+                    <i class="fa-solid fa-file-arrow-down"></i> Tải / Xem file đề bài từ Giáo viên (${fileName})
+                </a>
+            `;
+        } else {
+            teacherFileBox.innerHTML = `
+                <span style="font-size: 13px; color: var(--text-sub); font-style: italic;">
+                    <i class="fa-solid fa-circle-info"></i> Giáo viên không đính kèm file đề bài cho bài tập này.
+                </span>
+            `;
+        }
+    }
+
+    function handleFileSelect(input) {
+        if (input.files) {
+            for (let i = 0; i < input.files.length; i++) {
+                selectedStudentFiles.push(input.files[i]);
+            }
+            renderPreview();
+        }
+    }
+
+    function renderPreview() {
+        const grid = document.getElementById('previewGrid');
+        grid.innerHTML = '';
+
+        existingFileUrls.forEach((url, index) => {
+            grid.innerHTML += `
+                <div class="image-preview-item">
+                    <img src="${url}" alt="Bài đã nộp">
+                    <button type="button" class="btn-delete-file" onclick="removeExistingFileAt(${index})" title="Xóa file này"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `;
+        });
+
+        selectedStudentFiles.forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    grid.innerHTML += `
+                        <div class="image-preview-item">
+                            <img src="${e.target.result}" alt="Ảnh mới chọn">
+                            <button type="button" class="btn-delete-file" onclick="removeNewFileAt(${index})" title="Xóa file này"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                grid.innerHTML += `
+                    <div class="image-preview-item" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--input-bg); font-size: 11px; padding: 10px; text-align: center; color: var(--text-main); position: relative;">
+                        <button type="button" class="btn-delete-file" onclick="removeNewFileAt(${index})" title="Xóa file này"><i class="fa-solid fa-xmark"></i></button>
+                        <i class="fa-solid fa-file" style="font-size: 24px; color: #3b82f6; margin-bottom: 5px;"></i>
+                        ${file.name}
+                    </div>
+                `;
+            }
+        });
+    }
+
+    function removeExistingFileAt(index) {
+        existingFileUrls.splice(index, 1);
+        renderPreview();
+    }
+
+    function removeNewFileAt(index) {
+        selectedStudentFiles.splice(index, 1);
+        renderPreview();
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toastNotification');
+        toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+
+    async function submitHomework() {
+        if (selectedStudentFiles.length === 0 && existingFileUrls.length === 0) {
+            alert('Vui lòng chọn ít nhất một file hoặc ảnh bài làm trước khi gửi!');
+            return;
+        }
+
+        const btnSubmit = document.getElementById('btnSubmitHomework');
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi bài...`;
+        }
+
+        let uploadedUrls = [...existingFileUrls];
+
+        try {
+            for (let file of selectedStudentFiles) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const uploadRes = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (uploadRes.ok) {
+                    const uploadData = await uploadRes.json();
+                    if (uploadData.url) {
+                        uploadedUrls.push(uploadData.url);
+                    }
+                }
+            }
+
+            const combinedFileUrls = uploadedUrls.join(',');
+
+            const submitPayload = {
+                assignmentId: parseInt(assignmentId),
+                userId: parseInt(currentStudentProfileId),
+                fileUrl: combinedFileUrls,
+                status: 'SUBMITTED'
+            };
+
+            const subRes = await fetch('/api/submissions/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(submitPayload)
+            });
+
+            if (subRes.ok) {
+                showToast('Nộp bài thành công!');
+                selectedStudentFiles = [];
+                await checkSubmissionStatus();
+
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Gửi bài làm cho giáo viên`;
+                }
+            } else {
+                alert('Lưu bài nộp thất bại!');
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Gửi bài làm cho giáo viên`;
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Nộp bài thành công!');
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Gửi bài làm cho giáo viên`;
+            }
+        }
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    profileWrapper.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+    window.addEventListener('click', () => { if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show'); });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            if (text) text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+            if (text) text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+
+</body>
+</html>

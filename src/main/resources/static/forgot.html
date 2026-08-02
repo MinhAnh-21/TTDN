@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quên Mật Khẩu - Hệ Thống Thi Trực Tuyến</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+        body { height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #4facfe, #00c6ff); }
+        .container { width: 420px; background: white; border-radius: 18px; padding: 35px; box-shadow: 0 20px 40px rgba(0, 0, 0, .2); }
+        .logo { text-align: center; margin-bottom: 25px; }
+        .logo h2 { color: #2196f3; }
+        .logo p { color: #777; font-size: 14px; }
+        h3 { text-align: center; margin-bottom: 15px; color: #333; }
+        .note { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
+        .input-box { position: relative; margin-bottom: 18px; }
+        .input-box input { width: 100%; padding: 13px 15px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px; transition: .3s; }
+        .input-box input:focus { border-color: #2196f3; }
+        button { width: 100%; padding: 13px; border: none; border-radius: 8px; background: #2196f3; color: white; font-size: 16px; cursor: pointer; transition: .3s; }
+        button:hover { background: #1976d2; }
+        .links { margin-top: 18px; text-align: center; }
+        .links a { color: #2196f3; text-decoration: none; cursor: pointer; font-weight: 500; }
+        .links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">
+        <h2>🎓 Thi Trực Tuyến</h2>
+        <p>Online Examination System</p>
+    </div>
+
+    <h3>Quên mật khẩu</h3>
+    <p class="note">Nhập email của bạn để nhận liên kết đặt lại mật khẩu.</p>
+
+    <form onsubmit="event.preventDefault(); alert('Đã gửi yêu cầu khôi phục mật khẩu vào email của bạn!');">
+        <div class="input-box">
+            <input type="email" placeholder="Nhập email..." required>
+        </div>
+
+        <button type="submit">Gửi yêu cầu</button>
+    </form>
+
+    <div class="links">
+        <a href="/login.html">← Quay lại đăng nhập</a>
+    </div>
+</div>
+
+</body>
+</html>

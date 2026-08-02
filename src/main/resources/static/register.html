@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký - Hệ Thống Thi Trực Tuyến</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+        body { height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #4facfe, #00c6ff); }
+        .container { width: 420px; background: white; border-radius: 18px; padding: 35px; box-shadow: 0 20px 40px rgba(0, 0, 0, .2); }
+        .logo { text-align: center; margin-bottom: 20px; }
+        .logo h2 { color: #2196f3; }
+        .logo p { color: #777; font-size: 14px; }
+        h3 { text-align: center; margin-bottom: 15px; color: #333; }
+
+        .role-tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            position: relative;
+        }
+        .role-tab {
+            flex: 1;
+            text-align: center;
+            padding-bottom: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #777;
+            cursor: pointer;
+            transition: .3s;
+            user-select: none;
+        }
+        .role-tab i { margin-right: 6px; }
+        .role-tab.active { color: #2196f3; font-weight: 600; }
+        .role-indicator {
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 50%;
+            height: 2px;
+            background: #2196f3;
+            transition: transform 0.3s ease;
+        }
+
+        .input-box { position: relative; margin-bottom: 18px; }
+        .input-box input { width: 100%; padding: 13px 45px 13px 15px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px; transition: .3s; }
+        .input-box input:focus { border-color: #2196f3; }
+        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #666; cursor: pointer; font-size: 18px; transition: .3s; }
+        .toggle-password:hover { color: #2196f3; }
+
+        button { width: 100%; padding: 13px; border: none; border-radius: 8px; background: #2196f3; color: white; font-size: 16px; cursor: pointer; transition: .3s; }
+        button:hover { background: #1976d2; }
+
+        .links { margin-top: 18px; text-align: center; }
+        .links a { color: #2196f3; text-decoration: none; cursor: pointer; font-weight: 500; }
+        .links a:hover { text-decoration: underline; }
+        .links small { color: #666; }
+
+        .alert-msg { font-size: 13px; text-align: center; margin-bottom: 15px; padding: 8px; border-radius: 6px; display: none; }
+        .alert-msg.error { background: #ffe6e6; color: #d9534f; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">
+        <h2>🎓 Thi Trực Tuyến</h2>
+        <p>Online Examination System</p>
+    </div>
+
+    <h3>Đăng ký</h3>
+
+    <div class="role-tabs">
+        <div class="role-tab active" id="tabStudent" onclick="setRole('STUDENT')">
+            <i class="fa-solid fa-graduation-cap"></i> Học sinh
+        </div>
+        <div class="role-tab" id="tabTeacher" onclick="setRole('TEACHER')">
+            <i class="fa-solid fa-user-tie"></i> Giáo viên
+        </div>
+        <div class="role-indicator" id="roleIndicator"></div>
+    </div>
+
+    <div id="registerAlert" class="alert-msg"></div>
+
+    <form id="registerForm">
+        <div class="input-box">
+            <input type="text" id="regFullName" placeholder="Họ và tên" required>
+        </div>
+
+        <div class="input-box">
+            <input type="email" id="regEmail" placeholder="Email" required>
+        </div>
+
+        <div class="input-box">
+            <input type="text" id="regUsername" placeholder="Tên đăng nhập" required>
+        </div>
+
+        <div class="input-box">
+            <input type="password" id="regPassword" placeholder="Mật khẩu" required>
+            <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePassword('regPassword', this)"></i>
+        </div>
+
+        <button type="submit">Đăng ký</button>
+    </form>
+
+    <div class="links">
+        <small>Đã có tài khoản?</small>
+        <a href="/login.html">Đăng nhập</a>
+    </div>
+</div>
+
+<script>
+    let selectedRole = 'STUDENT';
+
+    function setRole(role) {
+        selectedRole = role;
+        const tabStudent = document.getElementById('tabStudent');
+        const tabTeacher = document.getElementById('tabTeacher');
+        const indicator = document.getElementById('roleIndicator');
+
+        if (role === 'STUDENT') {
+            tabStudent.classList.add('active');
+            tabTeacher.classList.remove('active');
+            indicator.style.transform = 'translateX(0)';
+        } else {
+            tabTeacher.classList.add('active');
+            tabStudent.classList.remove('active');
+            indicator.style.transform = 'translateX(100%)';
+        }
+    }
+
+    function togglePassword(inputId, icon){
+        const input = document.getElementById(inputId);
+        if(input.type === "password"){
+            input.type = "text";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }else{
+            input.type = "password";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fullName = document.getElementById('regFullName').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value.trim();
+        const role = selectedRole;
+        const alertBox = document.getElementById('registerAlert');
+
+        alertBox.className = "alert-msg";
+
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fullName, email, username, password, role })
+            });
+
+            if (response.ok) {
+                // Thành công -> Chuyển ngay sang trang Đăng nhập
+                window.location.href = "/login.html";
+            } else {
+                alertBox.textContent = "Đăng ký thất bại, tên đăng nhập hoặc email đã tồn tại!";
+                alertBox.classList.add("error");
+            }
+        } catch (err) {
+            console.error(err);
+            alertBox.textContent = "Không thể kết nối đến máy chủ!";
+            alertBox.classList.add("error");
+        }
+    });
+</script>
+
+</body>
+</html>

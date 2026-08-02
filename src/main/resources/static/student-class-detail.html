@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết lớp học - Học Sinh</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.05);
+            --input-bg: #f0f3f6;
+            --btn-bg: #2196f3;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --input-bg: #111726;
+            --btn-bg: #2563eb;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 20px 0; z-index: 10;
+        }
+        .sidebar-logo {
+            width: 45px; height: 45px; background: white; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; color: #2196f3;
+            font-size: 22px; font-weight: bold; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu {
+            list-style: none; width: 100%; display: flex; flex-direction: column;
+            align-items: center; gap: 15px; flex: 1;
+        }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 20px; border-radius: 14px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            color: #ffffff; background: rgba(255, 255, 255, 0.12);
+        }
+
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 75px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 5px 12px; font-size: 13px; font-weight: 500;
+            border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.2s ease; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .header {
+            height: 70px; background: var(--bg-header); display: flex;
+            justify-content: space-between; align-items: center; padding: 0 35px;
+            position: relative; border-bottom: 1px solid var(--border-color);
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .btn-back-clean {
+            background: transparent; border: none; color: var(--text-main);
+            font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; text-decoration: none;
+        }
+        .btn-back-clean:hover { color: #3b82f6; }
+        .header-title-page { font-size: 16px; font-weight: 600; color: var(--text-sub); border-left: 2px solid var(--border-color); padding-left: 15px; }
+
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .notification-icon { position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; padding: 5px 10px; border-radius: 8px; user-select: none;
+        }
+        .user-profile-wrapper:hover { background: rgba(255, 255, 255, 0.05); }
+        .avatar {
+            width: 40px; height: 40px; background: #2563eb; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px;
+            background: #202a40; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+            color: #e2e8f0; font-size: 14px; text-decoration: none;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        .class-layout { display: flex; flex: 1; overflow: hidden; }
+
+        .class-sidebar-sub {
+            width: 250px; background: var(--bg-card); border-right: 1px solid var(--border-color);
+            padding: 20px 15px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .sub-menu-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            border-radius: 10px; color: var(--text-main); font-size: 14px; font-weight: 500;
+            cursor: pointer; text-decoration: none; transition: 0.2s;
+        }
+        .sub-menu-item i { font-size: 16px; width: 20px; color: var(--text-sub); }
+        .sub-menu-item.active { background: var(--btn-bg); color: white; }
+        .sub-menu-item.active i { color: white; }
+        .sub-menu-item:not(.active):hover { background: rgba(255,255,255,0.05); }
+
+        .class-content-area { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-body); }
+
+        .class-info-card {
+            background: var(--bg-card); padding: 25px; border-radius: 14px;
+            border: 1px solid var(--border-color); margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .class-title { font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+        .class-meta { font-size: 13px; color: var(--text-sub); }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .empty-box {
+            background: var(--bg-card); border-radius: 14px; padding: 60px 20px;
+            text-align: center; border: 1px solid var(--border-color);
+        }
+        .empty-icon { font-size: 45px; color: var(--btn-bg); margin-bottom: 15px; }
+        .empty-box p { color: var(--text-sub); font-size: 15px; margin-bottom: 20px; }
+
+        .btn-action {
+            background: var(--btn-bg); color: white; border: none; padding: 8px 16px;
+            border-radius: 8px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; font-size: 13px; text-decoration: none;
+        }
+        .btn-action:hover { opacity: 0.9; }
+
+        .badge-submitted { background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+        .badge-unsubmitted { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+        .badge-graded { background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+
+        tr.assignment-row:hover { background: rgba(59, 130, 246, 0.05) !important; }
+        .assignment-link-title { color: var(--text-main); transition: color 0.2s; }
+        tr.assignment-row:hover .assignment-link-title { color: #3b82f6; }
+    </style>
+</head>
+<body class="dark-mode">
+
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li class="active" data-tooltip="Danh sách lớp"><a href="/student-dashboard.html"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-book-open"></i></a></li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <div class="header">
+        <div class="header-left">
+            <a href="/student-dashboard.html" class="btn-back-clean">
+                <i class="fa-solid fa-chevron-left"></i> Quay lại
+            </a>
+            <div class="header-title-page" id="headerPageTitle">Chi tiết lớp học: Đang tải...</div>
+        </div>
+
+        <div class="header-right">
+            <div class="notification-icon" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">H</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Nguyễn Thị Hoài</div>
+                    <div class="role">Học sinh</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/student-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
+                    <!-- Nút chuyển đổi sang màn hình giáo viên (chỉ hiện khi là tài khoản giáo viên/admin) -->
+                    <a href="/teacher-dashboard.html" class="dropdown-item" id="btnTeacherScreen" style="display: none;">
+                        <i class="fa-solid fa-right-left"></i> Vào màn giáo viên
+                    </a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="class-layout">
+        <!-- Sub-sidebar điều hướng Tab -->
+        <div class="class-sidebar-sub">
+            <div class="sub-menu-item active" onclick="switchTab('assignments', this, 'Bài tập, đề thi')">
+                <i class="fa-solid fa-file-lines"></i> Bài tập, đề thi
+            </div>
+            <div class="sub-menu-item" onclick="switchTab('news', this, 'Bảng tin')">
+                <i class="fa-solid fa-bullhorn"></i> Bảng tin
+            </div>
+            <div class="sub-menu-item" onclick="switchTab('classmates', this, 'Danh sách bạn học')">
+                <i class="fa-solid fa-users"></i> Danh sách bạn học
+            </div>
+            <div class="sub-menu-item" onclick="switchTab('scores', this, 'Bảng điểm cá nhân')">
+                <i class="fa-solid fa-table-list"></i> Bảng điểm cá nhân
+            </div>
+        </div>
+
+        <div class="class-content-area">
+            <div class="class-info-card">
+                <div>
+                    <div class="class-title" id="classNameDisplay">Chi tiết lớp học</div>
+                    <div class="class-meta" id="schoolYearDisplay">Đang tải thông tin lớp...</div>
+                </div>
+                <div>
+                    <span style="background: rgba(59,130,246,0.15); color: #3b82f6; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;">
+                        <i class="fa-solid fa-user-graduate"></i> Đang học
+                    </span>
+                </div>
+            </div>
+
+            <!-- TAB 1: BÀI TẬP, ĐỀ THI -->
+            <div id="tabAssignments" class="tab-pane active">
+                <div class="empty-box" id="emptyAssignmentBox" style="display: none;">
+                    <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                    <p>Chưa có bài tập nào được giao cho lớp này!</p>
+                </div>
+
+                <div id="assignmentTableContainer">
+                    <table style="width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                        <thead>
+                        <tr style="background: rgba(59,130,246,0.1); text-align: left;">
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main); width: 35%;">Tên bài tập</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Hạn nộp</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Trạng thái</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main); text-align: center;">Điểm số</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main); text-align: center;">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="assignmentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: BẢNG TIN -->
+            <div id="tabNews" class="tab-pane">
+                <div class="empty-box">
+                    <div class="empty-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                    <p>Chưa có thông báo nào từ giáo viên phụ trách.</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: BẠN HỌC -->
+            <div id="tabClassmates" class="tab-pane">
+                <div id="classmatesTableContainer">
+                    <table style="width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                        <thead>
+                        <tr style="background: rgba(59,130,246,0.1); text-align: left;">
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Họ và tên</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Email</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Vai trò</th>
+                        </tr>
+                        </thead>
+                        <tbody id="classmatesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: BẢNG ĐIỂM CÁ NHÂN -->
+            <div id="tabScores" class="tab-pane">
+                <div id="scoresTablesContainer" style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Render tự động -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('id');
+
+    let assignmentsList = [];
+    let currentUserId = null;
+    let currentStudentProfileId = null;
+
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            window.location.reload();
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        let displayName = localStorage.getItem('fullName') || 'Nguyễn Thị Hoài';
+        document.getElementById('userName').textContent = displayName;
+
+        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email') || 'hoaint@gmail.com';
+        try {
+            const userRes = await fetch(`/api/users/profile/${currentUsername}`);
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                currentUserId = userData.idUser;
+
+                // KIỂM TRA QUYỀN GIÁO VIÊN / ADMIN ĐỂ HIỆN NÚT CHUYỂN MÀN HÌNH
+                const userRole = (userData.role || localStorage.getItem('role') || '').toUpperCase();
+                if (userRole.includes('TEACHER') || userRole.includes('GIÁO VIÊN') || userRole.includes('ADMIN')) {
+                    const btnTeacher = document.getElementById('btnTeacherScreen');
+                    if (btnTeacher) btnTeacher.style.display = 'flex';
+                }
+
+                const stdRes = await fetch(`/api/classes/student-profile/${currentUserId}`);
+                if (stdRes.ok) {
+                    const stdData = await stdRes.json();
+                    currentStudentProfileId = stdData.idStudentProfiles || stdData.id;
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
+        if (!currentStudentProfileId) currentStudentProfileId = currentUserId || 4;
+
+        const avatarEl = document.getElementById('userAvatar');
+        const savedAvatar = localStorage.getItem('userAvatarUrl');
+        if (savedAvatar) {
+            avatarEl.innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
+        } else {
+            avatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+        }
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+            if (text) text.textContent = 'Chế độ tối';
+        } else {
+            document.body.classList.add('dark-mode');
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            if (text) text.textContent = 'Chế độ sáng';
+            localStorage.setItem('darkMode', 'enabled');
+        }
+
+        if (classId) {
+            await loadClassInfo();
+            await loadClassAssignments();
+            await loadClassmates();
+        }
+    });
+
+    async function loadClassInfo() {
+        try {
+            const res = await fetch(`/api/classes/${classId}`);
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('classNameDisplay').textContent = data.className;
+                document.getElementById('schoolYearDisplay').textContent = `Năm học: ${data.schoolYear || '2025-2026'} | Giáo viên phụ trách: Nguyễn Văn Minh`;
+                document.getElementById('headerPageTitle').textContent = `Chi tiết lớp học: ${data.className}`;
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function loadClassAssignments() {
+        try {
+            const res = await fetch(`/api/classes/${classId}/assignments`);
+            if (res.ok) {
+                assignmentsList = await res.json();
+                await renderAssignmentsWithRealStatus(assignmentsList);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function renderAssignmentsWithRealStatus(list) {
+        const tbody = document.getElementById('assignmentTableBody');
+        const emptyBox = document.getElementById('emptyAssignmentBox');
+        const tableContainer = document.getElementById('assignmentTableContainer');
+
+        tbody.innerHTML = '';
+        if (!list || list.length === 0) {
+            emptyBox.style.display = 'block';
+            tableContainer.style.display = 'none';
+            return;
+        }
+
+        emptyBox.style.display = 'none';
+        tableContainer.style.display = 'block';
+
+        let subjectMap = {};
+
+        for (let a of list) {
+            const assignId = a.idAssignments || a.id;
+            let submission = null;
+            try {
+                const subRes = await fetch(`/api/submissions/check?assignmentId=${assignId}&userId=${currentStudentProfileId}`);
+                if (subRes.ok) {
+                    submission = await subRes.json();
+                }
+            } catch (e) {
+                submission = null;
+            }
+
+            let isSubmitted = false;
+            let isGraded = false;
+            let scoreValue = '-';
+            let rawScore = null;
+
+            if (submission && (submission.status || submission.submittedFile || submission.fileUrl)) {
+                if (submission.status === 'GRADED' || submission.grade != null || submission.score != null) {
+                    isSubmitted = true;
+                    isGraded = true;
+                    rawScore = parseFloat(submission.grade || submission.score);
+                    scoreValue = `${rawScore} / 10`;
+                } else {
+                    isSubmitted = true;
+                }
+            }
+
+            let textCheck = (a.title + " " + (a.description || "")).toLowerCase();
+            let subjectName = "Môn học chung";
+
+            if (textCheck.includes('anh') || textCheck.includes('tiếng anh') || textCheck.includes('english')) {
+                subjectName = "Tiếng Anh";
+            } else if (textCheck.includes('toán') || textCheck.includes('math')) {
+                subjectName = "Toán học";
+            } else if (a.subject && a.subject.trim() !== '') {
+                subjectName = a.subject;
+            }
+
+            if (!subjectMap[subjectName]) {
+                subjectMap[subjectName] = [];
+            }
+            subjectMap[subjectName].push({
+                title: a.title,
+                description: a.description || "",
+                score: rawScore,
+                isGraded: isGraded
+            });
+
+            let statusBadge = isSubmitted
+                ? (isGraded ? `<span class="badge-graded"><i class="fa-solid fa-check-double"></i> Đã chấm điểm</span>` : `<span class="badge-submitted"><i class="fa-solid fa-check"></i> Đã nộp</span>`)
+                : `<span class="badge-unsubmitted"><i class="fa-solid fa-clock"></i> Chưa nộp</span>`;
+
+            let scoreDisplay = isGraded ? `<span style="font-weight: 700; color: #3b82f6;">${scoreValue}</span>` : `<span style="color: var(--text-sub);">-</span>`;
+
+            let actionBtnHtml = '';
+            if (isGraded) {
+                actionBtnHtml = `<span style="font-size: 13px; color: #3b82f6; font-weight: 600;"><i class="fa-solid fa-lock"></i> Đã khóa</span>`;
+            } else if (isSubmitted) {
+                actionBtnHtml = `<button onclick="goToAssignmentDetail(${assignId})" class="btn-action" style="background: #10b981;"><i class="fa-solid fa-arrows-rotate"></i> Nộp lại</button>`;
+            } else {
+                actionBtnHtml = `<button onclick="goToAssignmentDetail(${assignId})" class="btn-action"><i class="fa-solid fa-upload"></i> Nộp bài</button>`;
+            }
+
+            tbody.innerHTML += `
+                <tr class="assignment-row" style="border-bottom: 1px solid var(--border-color); cursor: pointer;" onclick="goToAssignmentDetail(${assignId})">
+                    <td style="padding: 14px 16px; width: 35%;">
+                        <span class="assignment-link-title" style="font-weight: 600; font-size: 15px;">${a.title}</span>
+                        <div style="font-size: 12px; color: var(--text-sub); font-weight: 400; margin-top: 4px;">${a.description || 'Không có mô tả'}</div>
+                    </td>
+                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${a.dueDate ? a.dueDate.replace('T', ' ') : 'Không giới hạn'}</td>
+                    <td style="padding: 14px 16px;">${statusBadge}</td>
+                    <td style="padding: 14px 16px; text-align: center;">${scoreDisplay}</td>
+                    <td style="padding: 14px 16px; text-align: center;" onclick="event.stopPropagation()">
+                        ${actionBtnHtml}
+                    </td>
+                </tr>
+            `;
+        }
+
+        renderScoresBySubject(subjectMap);
+    }
+
+    function renderScoresBySubject(subjectMap) {
+        const container = document.getElementById('scoresTablesContainer');
+        container.innerHTML = '';
+
+        for (let subject in subjectMap) {
+            let items = subjectMap[subject];
+            let btvn = null, kt15p = null, giuaky = null, cuoiky = null;
+
+            items.forEach(item => {
+                let info = (item.title + " " + item.description).toLowerCase();
+                if (item.isGraded && item.score != null) {
+                    if (info.includes('15') || info.includes('kiểm tra 15')) {
+                        kt15p = item.score;
+                    } else if (info.includes('giữa kỳ') || info.includes('giua ky')) {
+                        giuaky = item.score;
+                    } else if (info.includes('cuối kỳ') || info.includes('cuoi ky')) {
+                        cuoiky = item.score;
+                    } else {
+                        btvn = item.score;
+                    }
+                }
+            });
+
+            let subjectAvg = '-';
+            let isFullScores = (btvn !== null && kt15p !== null && giuaky !== null && cuoiky !== null);
+            if (isFullScores) {
+                let sum = btvn + kt15p + giuaky + cuoiky;
+                subjectAvg = (sum / 4).toFixed(1);
+            }
+
+            container.innerHTML += `
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h3 style="font-size: 16px; color: var(--text-main); margin-bottom: 15px;"><i class="fa-solid fa-book" style="color: #3b82f6;"></i> ${subject}</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                        <tr style="background: rgba(59,130,246,0.1); text-align: center;">
+                            <th style="padding: 12px; font-size: 13px; color: var(--text-main);">Bài tập về nhà</th>
+                            <th style="padding: 12px; font-size: 13px; color: var(--text-main);">Kiểm tra 15 phút</th>
+                            <th style="padding: 12px; font-size: 13px; color: var(--text-main);">Giữa kỳ</th>
+                            <th style="padding: 12px; font-size: 13px; color: var(--text-main);">Cuối kỳ</th>
+                            <th style="padding: 12px; font-size: 13px; color: #10b981; background: rgba(16, 185, 129, 0.15);">Điểm trung bình môn</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr style="text-align: center; border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 14px; color: var(--text-main);">${btvn !== null ? btvn : '-'}</td>
+                            <td style="padding: 14px; color: var(--text-main);">${kt15p !== null ? kt15p : '-'}</td>
+                            <td style="padding: 14px; color: var(--text-main);">${giuaky !== null ? giuaky : '-'}</td>
+                            <td style="padding: 14px; color: var(--text-sub);">${cuoiky !== null ? cuoiky : '-'}</td>
+                            <td style="padding: 14px; font-weight: 700; color: #10b981;">${subjectAvg}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+    }
+
+    function goToAssignmentDetail(assignmentId) {
+        window.location.href = `/student-assignment-detail.html?classId=${classId}&assignmentId=${assignmentId}`;
+    }
+
+    async function loadClassmates() {
+        try {
+            const res = await fetch(`/api/classes/${classId}/students`);
+            if (res.ok) {
+                const students = await res.json();
+                const tbody = document.getElementById('classmatesTableBody');
+                tbody.innerHTML = '';
+                students.forEach(s => {
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px; color: var(--text-main); font-weight: 500;">${s.fullName || s.username}</td>
+                            <td style="padding: 12px 16px; color: var(--text-sub);">${s.email || 'Chưa cập nhật'}</td>
+                            <td style="padding: 12px 16px; color: var(--text-sub);"><span style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Học sinh</span></td>
+                        </tr>
+                    `;
+                });
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function switchTab(tabName, element, titlePrefix) {
+        document.querySelectorAll('.class-sidebar-sub .sub-menu-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+        if (tabName === 'assignments') {
+            document.getElementById('tabAssignments').classList.add('active');
+        } else if (tabName === 'news') {
+            document.getElementById('tabNews').classList.add('active');
+        } else if (tabName === 'classmates') {
+            document.getElementById('tabClassmates').classList.add('active');
+        } else if (tabName === 'scores') {
+            document.getElementById('tabScores').classList.add('active');
+        }
+
+        const className = document.getElementById('classNameDisplay').textContent;
+        document.getElementById('headerPageTitle').textContent = `${titlePrefix}: ${className}`;
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    profileWrapper.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+    window.addEventListener('click', () => { if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show'); });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            if (text) text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+            if (text) text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+
+</body>
+</html>

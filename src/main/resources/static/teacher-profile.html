@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân - Giáo Viên</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.06);
+            --input-bg: #f8fafc;
+            --input-border: #cbd5e1;
+            --btn-primary: #2196f3;
+            --tab-active-bg: #2196f3;
+            --tab-active-text: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --input-bg: #111726;
+            --input-border: #334155;
+            --btn-primary: #2563eb;
+            --tab-active-bg: #2563eb;
+            --tab-active-text: #ffffff;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar {
+            width: 100px;
+            background: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .sidebar-logo {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #2196f3;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu {
+            list-style: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+            border-radius: 14px;
+            transition: .3s;
+            text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .header {
+            height: 70px;
+            min-height: 70px;
+            background: var(--bg-header);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .btn-back-clean {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 0;
+            transition: color 0.2s;
+        }
+        .btn-back-clean:hover { color: var(--btn-primary); }
+
+        .profile-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .profile-nav {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            width: 260px;
+            min-width: 260px;
+            height: fit-content;
+            flex-shrink: 0;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: 0.2s;
+            user-select: none;
+        }
+        .nav-item:last-child { margin-bottom: 0; }
+        .nav-item i { font-size: 16px; width: 20px; }
+        .nav-item.active {
+            background: var(--tab-active-bg);
+            color: var(--tab-active-text);
+        }
+        .nav-item:not(.active):hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .profile-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            flex: 1;
+            width: 100%;
+        }
+
+        .tab-pane { display: none; width: 100%; }
+        .tab-pane.active { display: block; }
+
+        .avatar-section {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .avatar-wrapper {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #2196f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        .avatar-text {
+            color: white;
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .avatar-upload-btn {
+            background: transparent;
+            border: 1px solid var(--btn-primary);
+            color: var(--btn-primary);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .avatar-hint { font-size: 12px; color: var(--text-sub); }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 8px; position: relative; }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--btn-primary);
+        }
+        .form-group input[readonly] {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .gender-options {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            height: 46px;
+        }
+        .gender-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+        .gender-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--btn-primary);
+            cursor: pointer;
+        }
+
+        .password-box { position: relative; }
+        .password-box input { padding-right: 45px; }
+        .toggle-pwd {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .toggle-pwd:hover { color: var(--btn-primary); }
+
+        .form-actions { display: flex; justify-content: flex-end; margin-top: 15px; }
+        .btn-submit {
+            background: var(--btn-primary);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-submit:hover { opacity: 0.9; }
+
+        .alert-box {
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .alert-box.success { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #22c55e; display: block; }
+        .alert-box.error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #ef4444; display: block; }
+    </style>
+</head>
+<body class="dark-mode">
+
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <i class="fa-solid fa-graduation-cap"></i>
+    </div>
+    <ul class="sidebar-menu">
+        <li data-tooltip="Màn hình chính"><a href="/teacher-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Quản lý Bài tập"><a href="#"><i class="fa-solid fa-file-lines"></i></a></li>
+        <li data-tooltip="Quản lý Đề thi"><a href="#"><i class="fa-solid fa-folder-open"></i></a></li>
+        <li data-tooltip="Quản lý Lớp học"><a href="#"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Quản lý Học sinh"><a href="#"><i class="fa-solid fa-users"></i></a></li>
+        <li data-tooltip="Ngân hàng câu hỏi"><a href="#"><i class="fa-solid fa-book"></i></a></li>
+    </ul>
+</div>
+
+<div class="main-container">
+
+    <div class="header">
+        <a href="/teacher-dashboard.html" class="btn-back-clean">
+            <i class="fa-solid fa-chevron-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="profile-container">
+
+        <div class="profile-nav">
+            <div class="nav-item active" onclick="switchProfileTab('info', this)">
+                <i class="fa-regular fa-user"></i> Thông tin chung
+            </div>
+            <div class="nav-item" onclick="switchProfileTab('password', this)">
+                <i class="fa-solid fa-lock"></i> Đổi mật khẩu
+            </div>
+        </div>
+
+        <div class="profile-card">
+
+            <div id="alertBox" class="alert-box"></div>
+
+            <!-- TAB 1: THÔNG TIN CHUNG -->
+            <div id="tabInfo" class="tab-pane active">
+                <form id="profileForm">
+                    <div class="avatar-section">
+                        <div class="avatar-wrapper">
+                            <span class="avatar-text" id="avatarText">N</span>
+                            <img src="" alt="Avatar" class="avatar-img" id="avatarImg">
+                        </div>
+                        <div>
+                            <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                            <button type="button" class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">
+                                <i class="fa-solid fa-upload"></i> Tải lên
+                            </button>
+                            <div class="avatar-hint">Tải lên file ảnh (PNG, JPG) dung lượng tối đa 5MB</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Họ và tên *</label>
+                            <input type="text" id="fullName" placeholder="Nhập họ và tên" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tên đăng nhập (Username)</label>
+                            <input type="text" id="username" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" id="email" placeholder="Nhập địa chỉ email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <input type="text" id="phone" placeholder="Nhập số điện thoại">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mã giáo viên</label>
+                            <input type="text" id="teacherCode" readonly placeholder="GV001">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Học vị / Trình độ</label>
+                            <select id="degree">
+                                <option value="Cử nhân">Cử nhân</option>
+                                <option value="Thạc sĩ">Thạc sĩ</option>
+                                <option value="Tiến sĩ">Tiến sĩ</option>
+                                <option value="Phó Giáo sư">Phó Giáo sư</option>
+                                <option value="Giáo sư">Giáo sư</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Khoa / Bộ môn công tác</label>
+                            <select id="department">
+                                <option value="Khoa Công Nghệ Thông Tin">Khoa Công Nghệ Thông Tin</option>
+                                <option value="Khoa Toán - Lý">Khoa Toán - Lý</option>
+                                <option value="Khoa Ngoại Ngữ">Khoa Ngoại Ngữ</option>
+                                <option value="Khoa Điện - Điện tử">Khoa Điện - Điện tử</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Giới tính</label>
+                            <div class="gender-options">
+                                <label class="gender-option">
+                                    <input type="radio" name="gender" value="Nam" checked> Nam
+                                </label>
+                                <label class="gender-option">
+                                    <input type="radio" name="gender" value="Nữ"> Nữ
+                                </label>
+                                <label class="gender-option">
+                                    <input type="radio" name="gender" value="Khác"> Khác
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">Cập nhật thông tin</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TAB 2: ĐỔI MẬT KHẨU -->
+            <div id="tabPassword" class="tab-pane">
+                <form id="changePasswordForm">
+                    <div class="form-grid" style="grid-template-columns: 1fr;">
+
+                        <div class="form-group">
+                            <label>Mật khẩu hiện tại *</label>
+                            <div class="password-box">
+                                <input type="password" id="oldPassword" placeholder="Nhập mật khẩu hiện tại" required>
+                                <i class="fa-solid fa-eye-slash toggle-pwd" onclick="togglePasswordVisibility('oldPassword', this)"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mật khẩu mới *</label>
+                            <div class="password-box">
+                                <input type="password" id="newPassword" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" required minlength="6">
+                                <i class="fa-solid fa-eye-slash toggle-pwd" onclick="togglePasswordVisibility('newPassword', this)"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Xác nhận mật khẩu mới *</label>
+                            <div class="password-box">
+                                <input type="password" id="confirmPassword" placeholder="Nhập lại mật khẩu mới" required>
+                                <i class="fa-solid fa-eye-slash toggle-pwd" onclick="togglePasswordVisibility('confirmPassword', this)"></i>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">Lưu mật khẩu mới</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    window.addEventListener('DOMContentLoaded', async () => {
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+
+        const currentUsername = localStorage.getItem('username');
+        if (!currentUsername) {
+            window.location.href = '/login.html';
+            return;
+        }
+
+        try {
+            // Đọc dữ liệu thực từ CSDL
+            const response = await fetch(`/api/users/profile/${currentUsername}`);
+            if (response.ok) {
+                const data = await response.json();
+
+                document.getElementById('fullName').value = data.fullName || '';
+                document.getElementById('username').value = data.username || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('teacherCode').value = data.teacherCode || '';
+
+                // Gán đúng tùy chọn đã lưu cho Học vị & Khoa
+                if (data.degree) {
+                    document.getElementById('degree').value = data.degree;
+                }
+                if (data.department) {
+                    document.getElementById('department').value = data.department;
+                }
+
+                if (data.gender) {
+                    const genderRadio = document.querySelector(`input[name="gender"][value="${data.gender}"]`);
+                    if (genderRadio) genderRadio.checked = true;
+                }
+
+                const savedAvatar = localStorage.getItem('userAvatarUrl');
+                const avatarImg = document.getElementById('avatarImg');
+                const avatarText = document.getElementById('avatarText');
+
+                if (savedAvatar) {
+                    avatarImg.src = savedAvatar;
+                    avatarImg.style.display = 'block';
+                    avatarText.style.display = 'none';
+                } else {
+                    const firstChar = (data.fullName || data.username || 'N').trim().charAt(0).toUpperCase();
+                    avatarText.textContent = firstChar;
+                }
+            }
+        } catch (err) {
+            console.error("Lỗi tải thông tin:", err);
+        }
+    });
+
+    document.getElementById('avatarInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Dung lượng ảnh tối đa là 5MB!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageUrl = event.target.result;
+                const avatarImg = document.getElementById('avatarImg');
+                const avatarText = document.getElementById('avatarText');
+
+                avatarImg.src = imageUrl;
+                avatarImg.style.display = 'block';
+                avatarText.style.display = 'none';
+
+                localStorage.setItem('userAvatarUrl', imageUrl);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function switchProfileTab(tabName, element) {
+        document.querySelectorAll('.profile-nav .nav-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+        const alertBox = document.getElementById('alertBox');
+        alertBox.className = "alert-box";
+
+        if (tabName === 'info') {
+            document.getElementById('tabInfo').classList.add('active');
+        } else {
+            document.getElementById('tabPassword').classList.add('active');
+        }
+    }
+
+    function togglePasswordVisibility(inputId, icon) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        }
+    }
+
+    // Gửi cả degree và department về CSDL
+    document.getElementById('profileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const alertBox = document.getElementById('alertBox');
+        const username = document.getElementById('username').value;
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const degree = document.getElementById('degree').value;
+        const department = document.getElementById('department').value;
+        const genderChecked = document.querySelector('input[name="gender"]:checked');
+        const gender = genderChecked ? genderChecked.value : 'Nam';
+
+        try {
+            const response = await fetch('/api/users/update-profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, fullName, email, phone, gender, degree, department })
+            });
+
+            const message = await response.text();
+
+            if (response.ok) {
+                localStorage.setItem('fullName', fullName);
+                localStorage.setItem('email', email);
+                localStorage.setItem('phone', phone);
+                localStorage.setItem('userGender', gender);
+
+                alertBox.textContent = "Cập nhật thông tin tài khoản thành công!";
+                alertBox.className = "alert-box success";
+            } else {
+                alertBox.textContent = message || "Cập nhật thất bại!";
+                alertBox.className = "alert-box error";
+            }
+        } catch (err) {
+            console.error(err);
+            alertBox.textContent = "Không thể kết nối tới máy chủ!";
+            alertBox.className = "alert-box error";
+        }
+
+        setTimeout(() => { alertBox.className = "alert-box"; }, 3000);
+    });
+
+    // API Đổi Mật Khẩu
+    document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const alertBox = document.getElementById('alertBox');
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const username = document.getElementById('username').value;
+
+        if (newPassword !== confirmPassword) {
+            alertBox.textContent = "Mật khẩu mới và xác nhận mật khẩu không trùng khớp!";
+            alertBox.className = "alert-box error";
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/users/change-password', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, oldPassword, newPassword })
+            });
+
+            const message = await response.text();
+
+            if (response.ok) {
+                alertBox.textContent = "Đổi mật khẩu thành công! Hệ thống sẽ chuyển về trang đăng nhập...";
+                alertBox.className = "alert-box success";
+                this.reset();
+
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = '/login.html';
+                }, 2000);
+            } else {
+                alertBox.textContent = message || "Đổi mật khẩu thất bại!";
+                alertBox.className = "alert-box error";
+            }
+        } catch (err) {
+            console.error(err);
+            alertBox.textContent = "Không thể kết nối tới máy chủ!";
+            alertBox.className = "alert-box error";
+        }
+    });
+</script>
+
+</body>
+</html>

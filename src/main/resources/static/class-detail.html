@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết lớp học - Giáo Viên</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.08);
+            --input-bg: #f0f3f6;
+            --btn-bg: #2196f3;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --input-bg: #111726;
+            --btn-bg: #2563eb;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 22px 0; z-index: 10;
+        }
+        .sidebar-logo {
+            width: 52px; height: 52px; background: white; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center; color: #2196f3;
+            font-size: 24px; font-weight: bold; margin-bottom: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu {
+            list-style: none; width: 100%; display: flex; flex-direction: column;
+            align-items: center; gap: 12px; flex: 1;
+        }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 56px; height: 56px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 22px; border-radius: 16px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            color: #ffffff; background: rgba(255, 255, 255, 0.15);
+        }
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 90px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 6px 14px; font-size: 13px;
+            border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .header {
+            height: 70px; background: var(--bg-header); display: flex;
+            justify-content: space-between; align-items: center; padding: 0 35px;
+            position: relative; border-bottom: 1px solid var(--border-color);
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .btn-back-clean {
+            background: transparent; border: none; color: var(--text-main);
+            font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; text-decoration: none;
+        }
+        .btn-back-clean:hover { color: #3b82f6; }
+        .header-title-page { font-size: 16px; font-weight: 600; color: var(--text-sub); border-left: 2px solid var(--border-color); padding-left: 15px; }
+
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .notification-icon { position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+        .notification-badge {
+            position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+            font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: 600;
+        }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; padding: 5px 10px; border-radius: 8px; user-select: none;
+        }
+        .avatar {
+            width: 40px; height: 40px; background: #3b82f6; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px;
+            background: #202a40; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+            color: #e2e8f0; font-size: 14px; text-decoration: none;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        .class-layout { display: flex; flex: 1; overflow: hidden; }
+
+        .class-sidebar-sub {
+            width: 250px; background: var(--bg-card); border-right: 1px solid var(--border-color);
+            padding: 20px 15px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .sub-menu-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            border-radius: 10px; color: var(--text-main); font-size: 14px; font-weight: 500;
+            cursor: pointer; text-decoration: none; transition: 0.2s;
+        }
+        .sub-menu-item i { font-size: 16px; width: 20px; color: var(--text-sub); }
+        .sub-menu-item.active { background: var(--btn-bg); color: white; }
+        .sub-menu-item.active i { color: white; }
+        .sub-menu-item:not(.active):hover { background: rgba(255,255,255,0.05); }
+
+        .class-content-area { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-body); }
+
+        .class-info-card {
+            background: var(--bg-card); padding: 25px; border-radius: 14px;
+            border: 1px solid var(--border-color); margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .class-title { font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+        .class-meta { font-size: 13px; color: var(--text-sub); }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .empty-box {
+            background: var(--bg-card); border-radius: 14px; padding: 60px 20px;
+            text-align: center; border: 1px solid var(--border-color);
+        }
+        .empty-icon { font-size: 45px; color: var(--btn-bg); margin-bottom: 15px; }
+        .empty-box p { color: var(--text-sub); font-size: 15px; margin-bottom: 20px; }
+
+        .btn-primary-action {
+            background: var(--btn-bg); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; font-size: 14px; text-decoration: none;
+        }
+        .btn-primary-action:hover { opacity: 0.9; }
+
+        .btn-danger-action {
+            background: #ef4444; color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; font-size: 14px;
+        }
+        .btn-danger-action:hover { opacity: 0.9; }
+
+        .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+
+        /* Modal chung */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; }
+        .modal.show { display: flex; }
+        .modal-content { background: var(--bg-card); padding: 30px; border-radius: 14px; width: 500px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-content h3 { margin-bottom: 20px; color: var(--text-main); font-size: 18px; }
+        .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .form-group select { padding: 11px 15px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); outline: none; font-size: 14px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+        .btn-cancel { background: #475569; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; }
+    </style>
+</head>
+<body class="dark-mode">
+
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li data-tooltip="Màn hình chính"><a href="/teacher-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Quản lý Bài tập"><a href="/teacher-add-assignment.html"><i class="fa-solid fa-file-lines"></i></a></li>
+        <li data-tooltip="Quản lý Đề thi"><a href="#"><i class="fa-solid fa-folder-open"></i></a></li>
+        <li class="active" data-tooltip="Quản lý Lớp học"><a href="/teacher-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Quản lý Học sinh"><a href="/teacher-students.html"><i class="fa-solid fa-users"></i></a></li>
+        <li data-tooltip="Ngân hàng câu hỏi"><a href="#"><i class="fa-solid fa-book"></i></a></li>
+        <li data-tooltip="Thông báo kết quả"><a href="#"><i class="fa-solid fa-chart-pie"></i></a></li>
+        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-graduation-cap"></i></a></li>
+        <li data-tooltip="Kho nội dung"><a href="#"><i class="fa-solid fa-box-archive"></i></a></li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <div class="header">
+        <div class="header-left">
+            <a href="/teacher-classes.html" class="btn-back-clean">
+                <i class="fa-solid fa-chevron-left"></i> Quay lại
+            </a>
+            <div class="header-title-page" id="headerPageTitle">Danh sách học sinh: Đang tải...</div>
+        </div>
+
+        <div class="header-right">
+            <div class="notification-icon" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge">2</span>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">N</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Nguyễn Văn Minh</div>
+                    <div class="role">Giáo viên</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/teacher-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
+                    <a href="/student-dashboard.html" class="dropdown-item"><i class="fa-solid fa-right-left"></i> Vào màn học sinh</a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="class-layout">
+        <div class="class-sidebar-sub">
+            <div class="sub-menu-item active" onclick="switchTab('students', this, 'Danh sách học sinh')">
+                <i class="fa-solid fa-users"></i> Danh sách học sinh
+            </div>
+            <div class="sub-menu-item" onclick="switchTab('assignments', this, 'Bài tập, đề thi')">
+                <i class="fa-solid fa-file-lines"></i> Bài tập, đề thi
+            </div>
+            <div class="sub-menu-item" onclick="switchTab('news', this, 'Bảng tin')">
+                <i class="fa-solid fa-bullhorn"></i> Bảng tin
+            </div>
+            <div class="sub-menu-item" onclick="switchTab('scores', this, 'Bảng điểm')">
+                <i class="fa-solid fa-table-list"></i> Bảng điểm
+            </div>
+        </div>
+
+        <div class="class-content-area">
+            <div class="class-info-card">
+                <div class="class-title" id="classNameDisplay">Đang tải...</div>
+                <div class="class-meta" id="schoolYearDisplay">Năm học: 2026 - 2027</div>
+            </div>
+
+            <!-- TAB 1: DANH SÁCH HỌC SINH -->
+            <div id="tabStudents" class="tab-pane active">
+                <div class="empty-box" id="emptyStudentBox">
+                    <div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
+                    <p>Chưa có dữ liệu học sinh trong lớp này</p>
+                    <button class="btn-primary-action" onclick="openAddStudentModal()">
+                        <i class="fa-solid fa-plus"></i> Thêm học sinh
+                    </button>
+                </div>
+                <div id="studentTableContainer" style="display: none;">
+                    <div class="table-toolbar">
+                        <button class="btn-primary-action" onclick="openAddStudentModal()">
+                            <i class="fa-solid fa-plus"></i> Thêm học sinh
+                        </button>
+                        <button class="btn-danger-action" onclick="removeAllStudents()">
+                            <i class="fa-solid fa-trash-can"></i> Xóa tất cả học sinh
+                        </button>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 8px; overflow: hidden;">
+                        <thead>
+                        <tr style="background: rgba(59,130,246,0.1); text-align: left;">
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Họ và tên</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Email</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Số điện thoại</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Giới tính</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main); text-align: center;">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="studentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: BÀI TẬP, ĐỀ THI -->
+            <div id="tabAssignments" class="tab-pane">
+                <div class="table-toolbar" style="margin-bottom: 20px;">
+                    <a href="#" id="btnAddAssignment" class="btn-primary-action">
+                        <i class="fa-solid fa-plus"></i> Giao bài mới
+                    </a>
+                </div>
+
+                <div class="empty-box" id="emptyAssignmentBox">
+                    <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                    <p>Chưa có bài tập, đề thi nào được giao cho lớp này!</p>
+                </div>
+
+                <div id="assignmentTableContainer" style="display: none;">
+                    <table style="width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 8px; overflow: hidden;">
+                        <thead>
+                        <tr style="background: rgba(59,130,246,0.1); text-align: left;">
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Tên bài tập</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Mô tả chi tiết</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Hạn nộp</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main); text-align: center;">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="assignmentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: BẢNG TIN -->
+            <div id="tabNews" class="tab-pane">
+                <div class="empty-box">
+                    <div class="empty-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                    <p>Chưa có thông báo hoặc bảng tin nào được đăng.</p>
+                </div>
+            </div>
+
+            <!-- TAB 4: BẢNG ĐIỂM -->
+            <div id="tabScores" class="tab-pane">
+                <div class="empty-box">
+                    <div class="empty-icon"><i class="fa-solid fa-table-list"></i></div>
+                    <p>Chưa có dữ liệu bảng điểm học sinh.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Học Sinh -->
+<div class="modal" id="studentModal">
+    <div class="modal-content">
+        <h3>Thêm học sinh từ hệ thống CSDL</h3>
+        <div class="form-group">
+            <label>Chọn tài khoản học sinh đã đăng ký</label>
+            <select id="studentSelect"></select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeAddStudentModal()">Hủy</button>
+            <button class="btn-primary-action" onclick="addStudentToClass()">Xác nhận thêm</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('id');
+    let currentClassName = "";
+    let classStudents = [];
+    let currentAssignments = [];
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        let displayName = localStorage.getItem('fullName') || 'Nguyễn Văn Minh';
+        document.getElementById('userName').textContent = displayName;
+
+        const avatarEl = document.getElementById('userAvatar');
+        const savedAvatar = localStorage.getItem('userAvatarUrl');
+        if (savedAvatar) {
+            avatarEl.innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
+        } else {
+            avatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+        }
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        } else {
+            document.body.classList.add('dark-mode');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        }
+
+        // Tự động chuyển về tab Bài tập, đề thi nếu URL có chứa #assignments
+        if (window.location.hash === '#assignments') {
+            const assignmentTabBtn = document.querySelectorAll('.class-sidebar-sub .sub-menu-item')[1];
+            if (assignmentTabBtn) {
+                switchTab('assignments', assignmentTabBtn, 'Bài tập, đề thi');
+            }
+        }
+
+        if (classId) {
+            document.getElementById('btnAddAssignment').href = `/teacher-add-assignment.html?classId=${classId}`;
+
+            try {
+                const res = await fetch(`/api/classes/${classId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    currentClassName = data.className;
+                    document.getElementById('classNameDisplay').textContent = currentClassName;
+                    document.getElementById('schoolYearDisplay').textContent = `Năm học: ${data.schoolYear}`;
+                    document.getElementById('headerPageTitle').textContent = `Chi tiết lớp học: ${currentClassName}`;
+                }
+
+                await loadClassStudentsFromDB();
+                loadAssignmentsFromDB();
+            } catch (err) {
+                console.error("Lỗi tải thông tin lớp:", err);
+            }
+        }
+    });
+
+    async function loadAssignmentsFromDB() {
+        try {
+            const res = await fetch(`/api/classes/${classId}/assignments`);
+            if (res.ok) {
+                currentAssignments = await res.json();
+                renderAssignments(currentAssignments);
+            }
+        } catch (err) {
+            console.error("Lỗi tải bài tập từ CSDL:", err);
+        }
+    }
+
+    function renderAssignments(assignments) {
+        const emptyBox = document.getElementById('emptyAssignmentBox');
+        const tableContainer = document.getElementById('assignmentTableContainer');
+        const tbody = document.getElementById('assignmentTableBody');
+
+        if (!assignments || assignments.length === 0) {
+            emptyBox.style.display = 'block';
+            tableContainer.style.display = 'none';
+        } else {
+            emptyBox.style.display = 'none';
+            tableContainer.style.display = 'block';
+            tbody.innerHTML = '';
+            assignments.forEach(a => {
+                const assignmentId = a.idAssignments || a.id;
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px; color: var(--text-main); font-weight: 500;">${a.title}</td>
+                        <td style="padding: 12px; color: var(--text-sub);">${a.description || 'Không có mô tả'}</td>
+                        <td style="padding: 12px; color: var(--text-sub); font-size: 13px;">${a.dueDate ? a.dueDate.replace('T', ' ') : 'Không giới hạn'}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <button onclick="goToGradingPage(${assignmentId})" class="btn-primary-action" style="padding: 6px 12px; font-size: 12px;" title="Chấm bài">
+                                <i class="fa-solid fa-pen-to-square"></i> Chấm bài
+                            </button>
+                            <button onclick="deleteAssignment(${assignmentId})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 16px; margin-left: 10px;" title="Xóa bài tập">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    }
+
+    // Chuyển hướng sang trang chấm bài riêng biệt
+    function goToGradingPage(assignmentId) {
+        window.location.href = `/teacher-grading.html?classId=${classId}&assignmentId=${assignmentId}`;
+    }
+
+    async function deleteAssignment(assignmentId) {
+        if (confirm('Bạn có chắc chắn muốn xóa bài tập này không?')) {
+            try {
+                const res = await fetch(`/api/classes/assignments/${assignmentId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadAssignmentsFromDB();
+                } else {
+                    alert('Xóa bài tập thất bại từ CSDL!');
+                }
+            } catch (err) {
+                console.error("Lỗi khi xóa bài tập:", err);
+                alert('Lỗi kết nối đến server!');
+            }
+        }
+    }
+
+    async function loadClassStudentsFromDB() {
+        try {
+            const res = await fetch(`/api/classes/${classId}/students`);
+            if (res.ok) {
+                const data = await res.json();
+                classStudents = data.map(s => ({
+                    id: s.idUser,
+                    fullName: s.fullName || s.username,
+                    email: s.email || 'Chưa cập nhật',
+                    phone: s.phone || 'Chưa cập nhật',
+                    gender: s.gender || 'Nam'
+                }));
+                renderClassStudents();
+            }
+        } catch (err) {
+            console.error("Lỗi tải danh sách học sinh:", err);
+        }
+    }
+
+    async function openAddStudentModal() {
+        try {
+            const res = await fetch('/api/classes/available-students');
+            if (res.ok) {
+                const allStudents = await res.json();
+                const select = document.getElementById('studentSelect');
+                select.innerHTML = '';
+
+                const addedIds = classStudents.map(s => s.id.toString());
+                const availableStudents = allStudents.filter(s => !addedIds.includes(s.idUser.toString()));
+
+                if (availableStudents.length === 0) {
+                    select.innerHTML = `<option value="">Tất cả học sinh đã được thêm vào lớp này</option>`;
+                } else {
+                    availableStudents.forEach(s => {
+                        const name = s.fullName || s.username;
+                        select.innerHTML += `<option value="${s.idUser}">${name} (${s.username})</option>`;
+                    });
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+        document.getElementById('studentModal').classList.add('show');
+    }
+
+    function closeAddStudentModal() {
+        document.getElementById('studentModal').classList.remove('show');
+    }
+
+    async function addStudentToClass() {
+        const select = document.getElementById('studentSelect');
+        const selectedId = select.value;
+        if (!selectedId) return;
+
+        try {
+            const res = await fetch(`/api/classes/${classId}/add-student/${selectedId}`, { method: 'POST' });
+            if (res.ok) {
+                closeAddStudentModal();
+                loadClassStudentsFromDB();
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    async function removeStudent(userId) {
+        if (confirm('Xóa học sinh này khỏi lớp?')) {
+            try {
+                const res = await fetch(`/api/classes/${classId}/remove-student/${userId}`, { method: 'DELETE' });
+                if (res.ok) loadClassStudentsFromDB();
+            } catch (err) { console.error(err); }
+        }
+    }
+
+    async function removeAllStudents() {
+        if (confirm('Xóa toàn bộ học sinh khỏi lớp?')) {
+            try {
+                const res = await fetch(`/api/classes/${classId}/remove-all-students`, { method: 'DELETE' });
+                if (res.ok) loadClassStudentsFromDB();
+            } catch (err) { console.error(err); }
+        }
+    }
+
+    function renderClassStudents() {
+        const emptyBox = document.getElementById('emptyStudentBox');
+        const tableContainer = document.getElementById('studentTableContainer');
+        const tbody = document.getElementById('studentTableBody');
+
+        if (classStudents.length === 0) {
+            emptyBox.style.display = 'block';
+            tableContainer.style.display = 'none';
+        } else {
+            emptyBox.style.display = 'none';
+            tableContainer.style.display = 'block';
+            tbody.innerHTML = '';
+            classStudents.forEach(s => {
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px; color: var(--text-main);">${s.fullName}</td>
+                        <td style="padding: 12px; color: var(--text-sub);">${s.email}</td>
+                        <td style="padding: 12px; color: var(--text-sub);">${s.phone}</td>
+                        <td style="padding: 12px; color: var(--text-sub);">${s.gender}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <button onclick="removeStudent(${s.id})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 16px;" title="Xóa học sinh">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    }
+
+    function switchTab(tabName, element, titlePrefix) {
+        document.querySelectorAll('.class-sidebar-sub .sub-menu-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+        if (tabName === 'students') {
+            document.getElementById('tabStudents').classList.add('active');
+        } else if (tabName === 'assignments') {
+            document.getElementById('tabAssignments').classList.add('active');
+        } else if (tabName === 'news') {
+            document.getElementById('tabNews').classList.add('active');
+        } else if (tabName === 'scores') {
+            document.getElementById('tabScores').classList.add('active');
+        }
+
+        if (currentClassName) {
+            document.getElementById('headerPageTitle').textContent = `${titlePrefix}: ${currentClassName}`;
+        }
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
+    profileWrapper.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+    });
+
+    window.addEventListener('click', function() {
+        if (dropdownMenu.classList.contains('show')) {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+
+</body>
+</html>

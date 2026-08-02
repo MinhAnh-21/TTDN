@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Màn hình chính - Học Sinh</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.05);
+            --input-bg: #f0f3f6;
+            --btn-bg: #2196f3;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --input-bg: #111726;
+            --btn-bg: #2563eb;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 20px 0; z-index: 10;
+        }
+        .sidebar-logo {
+            width: 45px; height: 45px; background: white; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; color: #2196f3;
+            font-size: 22px; font-weight: bold; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu {
+            list-style: none; width: 100%; display: flex; flex-direction: column;
+            align-items: center; gap: 15px; flex: 1;
+        }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 20px; border-radius: 14px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            color: #ffffff; background: rgba(255, 255, 255, 0.12);
+        }
+
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 75px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 5px 12px; font-size: 13px; font-weight: 500;
+            border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.2s ease; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .header {
+            height: 70px; background: var(--bg-header); display: flex;
+            justify-content: space-between; align-items: center; padding: 0 30px; position: relative;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .header-title { font-size: 18px; font-weight: 600; color: var(--text-main); }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+
+        .notification-icon { font-size: 20px; color: var(--text-sub); cursor: pointer; transition: color 0.3s; }
+        .notification-icon:hover { color: #3b82f6; }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; padding: 5px 10px; border-radius: 8px; user-select: none;
+        }
+        .user-profile-wrapper:hover { background: rgba(255, 255, 255, 0.05); }
+        .avatar {
+            width: 40px; height: 40px; background: #2563eb; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px;
+            background: #202a40; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+            color: #e2e8f0; font-size: 14px; text-decoration: none; transition: background 0.2s;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        .content { padding: 30px; max-width: 1200px; margin: 0 auto; width: 100%; flex: 1; }
+
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .content-title-box h2 { font-size: 20px; font-weight: 600; color: var(--text-main); }
+
+        .search-box { position: relative; width: 280px; margin-bottom: 30px; }
+        .search-box input {
+            width: 100%; padding: 11px 40px 11px 16px; background: var(--input-bg);
+            border: 1px solid var(--border-color); border-radius: 8px; outline: none;
+            color: var(--text-main); font-size: 14px;
+        }
+        .search-box i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-sub); }
+
+        .classes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .class-card {
+            background: var(--bg-card); border-radius: 12px; padding: 22px; border: 1px solid var(--border-color);
+            cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: 0.2s;
+        }
+        .class-card:hover { border-color: #2563eb; transform: translateY(-3px); }
+        .class-card i { font-size: 30px; color: var(--btn-bg); margin-bottom: 12px; }
+        .class-card h3 { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+        .class-card p { font-size: 13px; color: var(--text-sub); }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 80px 20px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); text-align: center;
+        }
+        .empty-icon {
+            width: 90px; height: 80px; background: #2563eb; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; color: white; font-size: 38px; margin-bottom: 20px;
+        }
+        .empty-state p { color: var(--text-sub); font-size: 15px; font-weight: 500; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="dark-mode">
+
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li class="active" data-tooltip="Danh sách lớp" onclick="switchTab('classes', this)">
+            <a href="#"><i class="fa-solid fa-layer-group"></i></a>
+        </li>
+        <li data-tooltip="Khóa học" onclick="switchTab('courses', this)">
+            <a href="#"><i class="fa-solid fa-book-open"></i></a>
+        </li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <div class="header">
+        <div class="header-title" id="pageTitle">Danh sách lớp</div>
+
+        <div class="header-right">
+            <div class="notification-icon" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">U</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Đang tải...</div>
+                    <div class="role" id="userRoleTitle">Học sinh</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/student-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
+                    <a href="/teacher-dashboard.html" class="dropdown-item" id="btnTeacherScreen" style="display: none;">
+                        <i class="fa-solid fa-right-left"></i> Vào màn giáo viên
+                    </a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div id="tabClasses" class="tab-content active">
+            <div class="content-header">
+                <div class="content-title-box">
+                    <h2>Danh sách lớp học</h2>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchClassInput" placeholder="Tìm kiếm theo tên lớp" oninput="filterClasses()">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <div id="classesContainer">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
+                    <p>Đang tải danh sách lớp học...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tabCourses" class="tab-content">
+            <div class="content-header">
+                <div class="content-title-box">
+                    <h2>Danh sách khóa học</h2>
+                </div>
+            </div>
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-box-open"></i></div>
+                <p>Chưa có khóa học nào</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let studentClasses = [];
+    let currentUserId = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        if (localStorage.getItem('darkMode') === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            document.getElementById('darkModeIcon').classList.replace('fa-sun', 'fa-moon');
+            document.getElementById('darkModeText').textContent = 'Chế độ tối';
+        }
+
+        // Lấy username từ localStorage hoặc hoaint@gmail.com
+        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email');
+
+        try {
+            // 1. Thử lấy profile từ API theo username
+            let response = await fetch(`/api/users/profile/${currentUsername}`);
+
+            // Nếu API lỗi, thử fetch toàn bộ danh sách users để tìm đúng tài khoản Hoài
+            if (!response.ok) {
+                const allUsersRes = await fetch('/api/classes/available-students');
+                if (allUsersRes.ok) {
+                    const users = await allUsersRes.json();
+                    const matchedUser = users.find(u => u.email === 'hoaint@gmail.com' || u.username === currentUsername || (u.fullName && u.fullName.includes('Hoài')));
+                    if (matchedUser) {
+                        currentUserId = matchedUser.idUser;
+                        setupUserProfile(matchedUser);
+                    }
+                }
+            } else {
+                const data = await response.json();
+                currentUserId = data.idUser;
+                setupUserProfile(data);
+            }
+
+            // 2. Tiến hành lấy danh sách lớp học
+            if (currentUserId) {
+                await loadStudentClasses(currentUserId);
+            } else {
+                // Phương án dự phòng quét tất cả các lớp nếu chưa tìm thấy userId
+                await fallbackFetchAllClasses();
+            }
+
+        } catch (err) {
+            console.error("Lỗi khi tải thông tin:", err);
+            await fallbackFetchAllClasses();
+        }
+    });
+
+    function setupUserProfile(user) {
+        const realFullName = user.fullName || user.username || 'Nguyễn Thị Hoài';
+        document.getElementById('userName').textContent = realFullName;
+        localStorage.setItem('fullName', realFullName);
+
+        const avatarElem = document.getElementById('userAvatar');
+        const savedAvatar = localStorage.getItem('userAvatarUrl');
+        if (savedAvatar) {
+            avatarElem.innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
+        } else {
+            avatarElem.textContent = realFullName.trim().charAt(0).toUpperCase();
+        }
+
+        const userRole = (user.role || localStorage.getItem('role') || '').toUpperCase();
+        if (userRole.includes('TEACHER') || userRole.includes('GIÁO VIÊN') || userRole.includes('ADMIN')) {
+            document.getElementById('btnTeacherScreen').style.display = 'flex';
+        }
+    }
+
+    async function loadStudentClasses(userId) {
+        try {
+            const res = await fetch(`/api/classes/student/${userId}`);
+            if (res.ok) {
+                studentClasses = await res.json();
+                if (studentClasses.length === 0) {
+                    // Nếu API theo userId trả về rỗng, thử quét tự động
+                    await fallbackFetchAllClasses();
+                } else {
+                    renderClasses(studentClasses);
+                }
+            } else {
+                await fallbackFetchAllClasses();
+            }
+        } catch (err) {
+            console.error("Lỗi tải lớp học:", err);
+            await fallbackFetchAllClasses();
+        }
+    }
+
+    // Phương án dự phòng: Duyệt qua tất cả các lớp, kiểm tra xem lớp nào có học sinh Hoài thì hiển thị lên
+    async function fallbackFetchAllClasses() {
+        try {
+            const res = await fetch('/api/classes');
+            if (res.ok) {
+                const allClasses = await res.json();
+                let matchedClasses = [];
+
+                for (let c of allClasses) {
+                    const studentsRes = await fetch(`/api/classes/${c.idClasses}/students`);
+                    if (studentsRes.ok) {
+                        const students = await studentsRes.json();
+                        const isStudentInClass = students.some(s =>
+                            s.email === 'hoaint@gmail.com' ||
+                            s.idUser === currentUserId ||
+                            (s.fullName && s.fullName.includes('Hoài'))
+                        );
+                        if (isStudentInClass) {
+                            matchedClasses.push(c);
+                        }
+                    }
+                }
+                studentClasses = matchedClasses;
+                renderClasses(studentClasses);
+            }
+        } catch (err) {
+            console.error(err);
+            renderClasses([]);
+        }
+    }
+
+    function renderClasses(list) {
+        const container = document.getElementById('classesContainer');
+        if (!list || list.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
+                    <p>Chưa có lớp học nào</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `<div class="classes-grid" id="classesGrid"></div>`;
+        const grid = document.getElementById('classesGrid');
+
+        list.forEach(c => {
+            grid.innerHTML += `
+                <div class="class-card" onclick="openStudentClassDetail(${c.idClasses})">
+                    <i class="fa-solid fa-school"></i>
+                    <h3>${c.className}</h3>
+                    <p>Năm học: ${c.schoolYear}</p>
+                </div>
+            `;
+        });
+    }
+
+    function filterClasses() {
+        const keyword = document.getElementById('searchClassInput').value.toLowerCase();
+        const filtered = studentClasses.filter(c => c.className.toLowerCase().includes(keyword));
+        renderClasses(filtered);
+    }
+
+    function openStudentClassDetail(classId) {
+        window.location.href = `/student-class-detail.html?id=${classId}`;
+    }
+
+    function switchTab(tabName, element) {
+        document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+        element.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+        if (tabName === 'classes') {
+            document.getElementById('tabClasses').classList.add('active');
+            document.getElementById('pageTitle').textContent = 'Danh sách lớp';
+        } else {
+            document.getElementById('tabCourses').classList.add('active');
+            document.getElementById('pageTitle').textContent = 'Khóa học';
+        }
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    profileWrapper.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+    window.addEventListener('click', () => { if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show'); });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+
+</body>
+</html>

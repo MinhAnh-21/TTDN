@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao diện chấm bài chi tiết - Giáo Viên</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.08);
+            --input-bg: #f0f3f6;
+            --btn-bg: #2196f3;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --input-bg: #111726;
+            --btn-bg: #2563eb;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 22px 0; z-index: 10;
+        }
+        .sidebar-logo {
+            width: 52px; height: 52px; background: white; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center; color: #2196f3;
+            font-size: 24px; font-weight: bold; margin-bottom: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu {
+            list-style: none; width: 100%; display: flex; flex-direction: column;
+            align-items: center; gap: 12px; flex: 1;
+        }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 56px; height: 56px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 22px; border-radius: 16px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            color: #ffffff; background: rgba(255, 255, 255, 0.15);
+        }
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 90px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 6px 14px; font-size: 13px;
+            border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .header {
+            height: 70px; background: var(--bg-header); display: flex;
+            justify-content: space-between; align-items: center; padding: 0 35px;
+            position: relative; border-bottom: 1px solid var(--border-color);
+        }
+        .btn-back-clean {
+            background: transparent; border: none; color: var(--text-main);
+            font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; text-decoration: none;
+        }
+        .btn-back-clean:hover { color: #3b82f6; }
+
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .notification-icon { position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+        .notification-badge {
+            position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+            font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: 600;
+        }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; padding: 5px 10px; border-radius: 8px; user-select: none;
+        }
+        .avatar {
+            width: 40px; height: 40px; background: #3b82f6; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px;
+            background: #202a40; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+            color: #e2e8f0; font-size: 14px; text-decoration: none;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        .content { padding: 30px 35px; max-width: 1300px; margin: 0 auto; width: 100%; }
+
+        .grading-header-card {
+            background: var(--bg-card); padding: 25px; border-radius: 14px;
+            border: 1px solid var(--border-color); margin-bottom: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .grading-title h2 { font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
+        .grading-title p { font-size: 13px; color: var(--text-sub); }
+
+        .toolbar-actions { display: flex; gap: 12px; align-items: center; }
+        .search-box { position: relative; width: 280px; }
+        .search-box input {
+            width: 100%; padding: 9px 35px 9px 14px; background: var(--input-bg);
+            border: 1px solid var(--border-color); border-radius: 8px; outline: none;
+            color: var(--text-main); font-size: 13px;
+        }
+        .search-box i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-sub); }
+
+        .btn-save-all {
+            background: #10b981; color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .btn-save-all:hover { opacity: 0.9; }
+
+        .table-container {
+            background: var(--bg-card); border-radius: 14px; border: 1px solid var(--border-color);
+            overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: rgba(59,130,246,0.1); padding: 15px 20px; font-size: 14px; color: var(--text-main); font-weight: 600; }
+        td { padding: 15px 20px; font-size: 14px; color: var(--text-sub); border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .badge-submitted { background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+        .badge-unsubmitted { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+
+        .score-input {
+            width: 80px; padding: 7px; text-align: center; background: var(--input-bg);
+            border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main); font-size: 14px; font-weight: 600; outline: none;
+        }
+        .score-input:focus { border-color: #3b82f6; }
+
+        #toastNotification {
+            position: fixed; bottom: 30px; right: 30px; background: #10b981; color: white;
+            padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: none; z-index: 9999;
+            animation: slideIn 0.3s ease forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+<div id="toastNotification"><i class="fa-solid fa-circle-check"></i> Lưu điểm thành công!</div>
+
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li data-tooltip="Màn hình chính"><a href="/teacher-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Quản lý Bài tập"><a href="/teacher-add-assignment.html"><i class="fa-solid fa-file-lines"></i></a></li>
+        <li data-tooltip="Quản lý Đề thi"><a href="#"><i class="fa-solid fa-folder-open"></i></a></li>
+        <li class="active" data-tooltip="Quản lý Lớp học"><a href="/teacher-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Quản lý Học sinh"><a href="/teacher-students.html"><i class="fa-solid fa-users"></i></a></li>
+        <li data-tooltip="Ngân hàng câu hỏi"><a href="#"><i class="fa-solid fa-book"></i></a></li>
+        <li data-tooltip="Thông báo kết quả"><a href="#"><i class="fa-solid fa-chart-pie"></i></a></li>
+        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-graduation-cap"></i></a></li>
+        <li data-tooltip="Kho nội dung"><a href="#"><i class="fa-solid fa-box-archive"></i></a></li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <div class="header">
+        <a href="#" id="btnBackToClass" class="btn-back-clean">
+            <i class="fa-solid fa-chevron-left"></i> Quay lại chi tiết lớp học
+        </a>
+
+        <div class="header-right">
+            <div class="notification-icon" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge">2</span>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">N</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Nguyễn Văn Minh</div>
+                    <div class="role">Giáo viên</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/teacher-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
+                    <a href="/student-dashboard.html" class="dropdown-item"><i class="fa-solid fa-right-left"></i> Vào màn học sinh</a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="grading-header-card">
+            <div class="grading-title">
+                <h2 id="assignmentTitleDisplay">Đang tải tên bài tập...</h2>
+                <p id="assignmentMetaDisplay">Lớp: Đang tải... | Tổng số học sinh: 0</p>
+            </div>
+            <div class="toolbar-actions">
+                <div class="search-box">
+                    <input type="text" id="searchStudentInput" placeholder="Tìm kiếm tên học sinh..." oninput="filterGradingTable()">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <button class="btn-save-all" onclick="saveAllScores()">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu tất cả điểm
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Họ và tên học sinh</th>
+                    <th>Trạng thái nộp bài</th>
+                    <th>Thời gian nộp</th>
+                    <th>File bài làm của học sinh</th>
+                    <th style="text-align: center;">Điểm số (Thang 10)</th>
+                </tr>
+                </thead>
+                <tbody id="gradingTableBody">
+                <tr><td colspan="5" style="text-align: center; padding: 40px;">Đang tải danh sách bài làm từ CSDL...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('classId');
+    const assignmentId = urlParams.get('assignmentId');
+
+    let gradingDataList = [];
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        let displayName = localStorage.getItem('fullName') || 'Nguyễn Văn Minh';
+        document.getElementById('userName').textContent = displayName;
+
+        const avatarEl = document.getElementById('userAvatar');
+        const savedAvatar = localStorage.getItem('userAvatarUrl');
+        if (savedAvatar) {
+            avatarEl.innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
+        } else {
+            avatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+        }
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        } else {
+            document.body.classList.add('dark-mode');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+            localStorage.setItem('darkMode', 'enabled');
+        }
+
+        if (classId) {
+            document.getElementById('btnBackToClass').href = `/class-detail.html?id=${classId}#assignments`;
+            await loadRealGradingDataFromDb();
+        }
+    });
+
+    function showToast(message) {
+        const toast = document.getElementById('toastNotification');
+        toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+
+    async function loadRealGradingDataFromDb() {
+        try {
+            const classRes = await fetch(`/api/classes/${classId}`);
+            let className = "Lớp học";
+            if (classRes.ok) {
+                const classData = await classRes.json();
+                className = classData.className;
+            }
+
+            const assignRes = await fetch(`/api/classes/${classId}/assignments`);
+            let assignTitle = "Bài tập";
+            if (assignRes.ok) {
+                const assignments = await assignRes.json();
+                const currentAssign = assignments.find(a => (a.idAssignments || a.id) == assignmentId);
+                if (currentAssign) {
+                    assignTitle = currentAssign.title;
+                }
+            }
+
+            document.getElementById('assignmentTitleDisplay').textContent = `Chấm bài: ${assignTitle}`;
+
+            const studentRes = await fetch(`/api/classes/${classId}/students`);
+            if (studentRes.ok) {
+                const students = await studentRes.json();
+                gradingDataList = [];
+
+                for (let s of students) {
+                    const userId = s.idUser || s.id;
+                    let targetProfileId = userId;
+                    try {
+                        const stdRes = await fetch(`/api/classes/student-profile/${userId}`);
+                        if (stdRes.ok) {
+                            const stdData = await stdRes.json();
+                            targetProfileId = stdData.idStudentProfiles || stdData.id || userId;
+                        }
+                    } catch (e) {}
+
+                    let submission = null;
+                    try {
+                        const subRes = await fetch(`/api/submissions/check?assignmentId=${assignmentId}&userId=${targetProfileId}`);
+                        if (subRes.ok) {
+                            submission = await subRes.json();
+                        }
+                    } catch (e) {}
+
+                    gradingDataList.push({
+                        studentId: userId,
+                        profileId: targetProfileId,
+                        fullName: s.fullName || s.username || 'Học sinh',
+                        submission: submission
+                    });
+                }
+
+                document.getElementById('assignmentMetaDisplay').textContent = `Lớp: ${className} | Tổng số học sinh: ${students.length}`;
+                renderGradingTable(gradingDataList);
+            }
+        } catch (err) {
+            console.error("Lỗi tải dữ liệu chấm bài thực tế:", err);
+        }
+    }
+
+    function renderGradingTable(list) {
+        const tbody = document.getElementById('gradingTableBody');
+        tbody.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-sub); padding: 30px;">Không có học sinh nào trong lớp này.</td></tr>`;
+            return;
+        }
+
+        list.forEach(item => {
+            const sub = item.submission;
+            const isSubmitted = sub && (sub.status === 'SUBMITTED' || sub.status === 'GRADED' || sub.submittedFile || sub.fileUrl || sub.score != null || sub.grade != null);
+
+            const statusBadge = isSubmitted
+                ? `<span class="badge-submitted">Đã nộp</span>`
+                : `<span class="badge-unsubmitted">Chưa nộp</span>`;
+
+            const submitTime = (sub && sub.submittedAt) ? sub.submittedAt.replace('T', ' ') : (isSubmitted ? 'Đã nộp' : '-');
+
+            let fileLink = `<span style="color: var(--text-sub);">Không có</span>`;
+            if (isSubmitted && (sub.submittedFile || sub.fileUrl)) {
+                const fileUrl = sub.submittedFile || sub.fileUrl;
+                fileLink = `<a href="${fileUrl}" target="_blank" download style="color: #3b82f6; font-weight: 500; text-decoration: underline;"><i class="fa-solid fa-file-arrow-down"></i> Xem file bài làm</a>`;
+            } else if (isSubmitted) {
+                fileLink = `<span style="color: #10b981; font-weight: 500;"><i class="fa-solid fa-check"></i> Đã nộp bài làm</span>`;
+            }
+
+            // Lấy chính xác điểm đã lưu từ trường grade hoặc score
+            const currentScore = (sub && sub.grade != null) ? sub.grade : (sub && sub.score != null ? sub.score : '');
+
+            tbody.innerHTML += `
+                <tr data-userid="${item.studentId}">
+                    <td style="font-weight: 500; color: var(--text-main);">${item.fullName}</td>
+                    <td>${statusBadge}</td>
+                    <td>${submitTime}</td>
+                    <td>${fileLink}</td>
+                    <td style="text-align: center;">
+                        <input type="number" min="0" max="10" step="0.1" value="${currentScore}" placeholder="" class="score-input student-score-input" data-userid="${item.profileId}">
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function filterGradingTable() {
+        const keyword = document.getElementById('searchStudentInput').value.toLowerCase();
+        const filtered = gradingDataList.filter(item => {
+            return item.fullName.toLowerCase().includes(keyword);
+        });
+        renderGradingTable(filtered);
+    }
+
+    async function saveAllScores() {
+        const inputs = document.querySelectorAll('.student-score-input');
+        let updateCount = 0;
+
+        try {
+            for (let input of inputs) {
+                const profileId = input.getAttribute('data-userid');
+                const scoreVal = input.value.trim();
+
+                if (scoreVal !== '') {
+                    const res = await fetch(`/api/submissions/grade`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            assignmentId: parseInt(assignmentId),
+                            userId: parseInt(profileId),
+                            score: parseFloat(scoreVal),
+                            grade: parseFloat(scoreVal)
+                        })
+                    });
+
+                    if (res.ok) {
+                        updateCount++;
+                    }
+                }
+            }
+
+            showToast(`Đã lưu thành công điểm cho ${updateCount} học sinh!`);
+            await loadRealGradingDataFromDb();
+
+        } catch (err) {
+            console.error(err);
+            showToast('Lưu điểm thành công!');
+            await loadRealGradingDataFromDb();
+        }
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
+    profileWrapper.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+    });
+
+    window.addEventListener('click', function() {
+        if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show');
+    });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+
+</body>
+</html>

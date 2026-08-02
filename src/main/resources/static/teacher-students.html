@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý bảng điểm chi tiết - Giáo Viên</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.08);
+            --input-bg: #f0f3f6;
+            --btn-bg: #2196f3;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --input-bg: #111726;
+            --btn-bg: #2563eb;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 22px 0; z-index: 10;
+        }
+        .sidebar-logo {
+            width: 52px; height: 52px; background: white; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center; color: #2196f3;
+            font-size: 24px; font-weight: bold; margin-bottom: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu {
+            list-style: none; width: 100%; display: flex; flex-direction: column;
+            align-items: center; gap: 12px; flex: 1;
+        }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 56px; height: 56px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 22px; border-radius: 16px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            color: #ffffff; background: rgba(255, 255, 255, 0.15);
+        }
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 90px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 6px 14px; font-size: 13px;
+            border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        /* Header */
+        .header {
+            height: 70px; background: var(--bg-header); display: flex;
+            justify-content: space-between; align-items: center; padding: 0 35px;
+            position: relative; border-bottom: 1px solid var(--border-color);
+        }
+        .btn-back-clean {
+            background: transparent; border: none; color: var(--text-main);
+            font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; text-decoration: none;
+        }
+        .btn-back-clean:hover { color: #3b82f6; }
+
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .notification-icon { position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+        .notification-badge {
+            position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+            font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: 600;
+        }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; padding: 5px 10px; border-radius: 8px; user-select: none;
+        }
+        .avatar {
+            width: 40px; height: 40px; background: #3b82f6; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px;
+            background: #202a40; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+            color: #e2e8f0; font-size: 14px; text-decoration: none;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        /* Content */
+        .content { padding: 30px 35px; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .page-title { font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 20px; }
+
+        .breadcrumb-nav {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 25px; font-size: 14px; color: var(--text-sub);
+        }
+        .breadcrumb-nav span { cursor: pointer; color: #3b82f6; font-weight: 500; }
+        .breadcrumb-nav span:hover { text-decoration: underline; }
+
+        /* Grid lớp học */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .card-box {
+            background: var(--bg-card); border-radius: 12px; padding: 25px 20px;
+            border: 1px solid var(--border-color); cursor: pointer; text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: 0.2s;
+        }
+        .card-box:hover { border-color: #2563eb; transform: translateY(-3px); }
+        .card-box i { font-size: 35px; color: var(--btn-bg); margin-bottom: 12px; }
+        .card-box h3 { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
+        .card-box p { font-size: 13px; color: var(--text-sub); }
+
+        /* Chi tiết lớp */
+        .class-detail-section { display: none; }
+        .section-subtitle { font-size: 16px; font-weight: 600; color: var(--text-main); margin: 25px 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Nút xuất Excel */
+        .btn-excel {
+            background: #10b981; color: white; border: none; padding: 7px 14px;
+            border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;
+        }
+        .btn-excel:hover { opacity: 0.9; }
+
+        .btn-excel-all {
+            background: #059669; color: white; border: none; padding: 10px 18px;
+            border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Search bar */
+        .search-table-box { position: relative; width: 280px; }
+        .search-table-box input {
+            width: 100%; padding: 8px 35px 8px 14px; background: var(--input-bg);
+            border: 1px solid var(--border-color); border-radius: 6px; outline: none;
+            color: var(--text-main); font-size: 13px;
+        }
+        .search-table-box i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 13px; }
+
+        /* Bảng chuẩn */
+        .table-wrapper {
+            background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);
+            overflow-x: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 15px;
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 15px; font-size: 13px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
+        th:last-child, td:last-child { border-right: none; }
+        th { background: rgba(59,130,246,0.1); color: var(--text-main); font-weight: 600; text-align: center; }
+        th:first-child, td:first-child { text-align: left; width: 25%; }
+        td { text-align: center; color: var(--text-sub); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+    </style>
+</head>
+<body class="dark-mode">
+
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li data-tooltip="Màn hình chính"><a href="/teacher-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Quản lý Bài tập"><a href="/teacher-add-assignment.html"><i class="fa-solid fa-file-lines"></i></a></li>
+        <li data-tooltip="Quản lý Đề thi"><a href="#"><i class="fa-solid fa-folder-open"></i></a></li>
+        <li data-tooltip="Quản lý Lớp học"><a href="/teacher-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li class="active" data-tooltip="Quản lý Học sinh"><a href="/teacher-students.html"><i class="fa-solid fa-users"></i></a></li>
+        <li data-tooltip="Ngân hàng câu hỏi"><a href="#"><i class="fa-solid fa-book"></i></a></li>
+        <li data-tooltip="Thông báo kết quả"><a href="#"><i class="fa-solid fa-chart-pie"></i></a></li>
+        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-graduation-cap"></i></a></li>
+        <li data-tooltip="Kho nội dung"><a href="#"><i class="fa-solid fa-box-archive"></i></a></li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <div class="header">
+        <a href="/teacher-dashboard.html" class="btn-back-clean">
+            <i class="fa-solid fa-chevron-left"></i> Quay lại Màn hình chính
+        </a>
+
+        <div class="header-right">
+            <div class="notification-icon" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge">2</span>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">N</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Nguyễn Văn Minh</div>
+                    <div class="role">Giáo viên</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/teacher-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
+                    <a href="/student-dashboard.html" class="dropdown-item"><i class="fa-solid fa-right-left"></i> Vào màn học sinh</a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="page-title" id="pageMainTitle">Chọn lớp học để xem bảng điểm chi tiết</div>
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-nav" id="breadcrumbNav" style="display: none;">
+            <span onclick="resetToClasses()">Tất cả Lớp học</span> / <span id="breadcrumbClass"></span>
+        </div>
+
+        <!-- Cấp 1: Grid Lớp học -->
+        <div class="grid-container" id="classGridContainer"></div>
+
+        <!-- Cấp 2: Bảng điểm chi tiết các môn -->
+        <div class="class-detail-section" id="classDetailSection">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button class="btn-excel-all" onclick="exportExcelAll()"><i class="fa-solid fa-file-excel"></i> Xuất Excel tất cả các môn</button>
+                <div class="search-table-box">
+                    <input type="text" id="searchStudentInput" placeholder="Tìm kiếm tên học sinh..." oninput="filterTables()">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+            </div>
+
+            <!-- MÔN TOÁN HỌC -->
+            <div class="section-subtitle">
+                <span style="color: #3b82f6;"><i class="fa-solid fa-book"></i> Môn: Toán học</span>
+                <button class="btn-excel" onclick="exportExcelSubject('Toán học')"><i class="fa-solid fa-file-excel"></i> Xuất Excel môn Toán</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Họ và tên học sinh</th>
+                        <th>Bài tập về nhà</th>
+                        <th>Điểm 15 phút</th>
+                        <th>Điểm giữa kỳ</th>
+                        <th>Điểm thi cuối kỳ</th>
+                        <th style="color: #10b981; background: rgba(16, 185, 129, 0.15);">Điểm trung bình môn</th>
+                    </tr>
+                    </thead>
+                    <tbody id="mathTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- MÔN TIẾNG ANH -->
+            <div class="section-subtitle">
+                <span style="color: #3b82f6;"><i class="fa-solid fa-book"></i> Môn: Tiếng Anh</span>
+                <button class="btn-excel" onclick="exportExcelSubject('Tiếng Anh')"><i class="fa-solid fa-file-excel"></i> Xuất Excel môn Anh</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Họ và tên học sinh</th>
+                        <th>Bài tập về nhà</th>
+                        <th>Điểm 15 phút</th>
+                        <th>Điểm giữa kỳ</th>
+                        <th>Điểm thi cuối kỳ</th>
+                        <th style="color: #10b981; background: rgba(16, 185, 129, 0.15);">Điểm trung bình môn</th>
+                    </tr>
+                    </thead>
+                    <tbody id="englishTableBody"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    let allClasses = [];
+    let currentStudentsWithScores = [];
+    let currentSelectedClassId = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        let displayName = localStorage.getItem('fullName') || 'Nguyễn Văn Minh';
+        document.getElementById('userName').textContent = displayName;
+
+        const avatarEl = document.getElementById('userAvatar');
+        const savedAvatar = localStorage.getItem('userAvatarUrl');
+        if (savedAvatar) {
+            avatarEl.innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
+        } else {
+            avatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+        }
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        } else {
+            document.body.classList.add('dark-mode');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+            localStorage.setItem('darkMode', 'enabled');
+        }
+
+        await loadClassesList();
+    });
+
+    async function loadClassesList() {
+        try {
+            const res = await fetch('/api/classes');
+            if (res.ok) {
+                allClasses = await res.json();
+                renderClassesGrid(allClasses);
+            }
+        } catch (err) {
+            console.error("Lỗi tải danh sách lớp:", err);
+        }
+    }
+
+    function renderClassesGrid(list) {
+        const container = document.getElementById('classGridContainer');
+        container.style.display = 'grid';
+        container.innerHTML = '';
+
+        document.getElementById('classDetailSection').style.display = 'none';
+        document.getElementById('breadcrumbNav').style.display = 'none';
+        document.getElementById('pageMainTitle').textContent = 'Chọn lớp học để xem bảng điểm chi tiết';
+
+        if (list.length === 0) {
+            container.innerHTML = `<p style="color: var(--text-sub);">Chưa có lớp học nào trong hệ thống.</p>`;
+            return;
+        }
+
+        list.forEach(c => {
+            container.innerHTML += `
+                <div class="card-box" onclick="selectClass(${c.idClasses}, '${c.className}')">
+                    <i class="fa-solid fa-school"></i>
+                    <h3>${c.className}</h3>
+                    <p>Năm học: ${c.schoolYear}</p>
+                </div>
+            `;
+        });
+    }
+
+    async function selectClass(classId, className) {
+        currentSelectedClassId = classId;
+        document.getElementById('classGridContainer').style.display = 'none';
+        document.getElementById('breadcrumbNav').style.display = 'flex';
+        document.getElementById('breadcrumbClass').textContent = className;
+        document.getElementById('pageMainTitle').textContent = `Bảng điểm chi tiết: ${className}`;
+        document.getElementById('classDetailSection').style.display = 'block';
+
+        await loadClassDataAndScores(classId);
+    }
+
+    async function loadClassDataAndScores(classId) {
+        try {
+            const studentRes = await fetch(`/api/classes/${classId}/students`);
+            const students = studentRes.ok ? await studentRes.json() : [];
+
+            const assignRes = await fetch(`/api/classes/${classId}/assignments`);
+            const assignments = assignRes.ok ? await assignRes.json() : [];
+
+            currentStudentsWithScores = [];
+
+            for (let s of students) {
+                const userId = s.idUser || s.id;
+                let targetProfileId = userId;
+                try {
+                    const stdRes = await fetch(`/api/classes/student-profile/${userId}`);
+                    if (stdRes.ok) {
+                        const stdData = await stdRes.json();
+                        targetProfileId = stdData.idStudentProfiles || stdData.id || userId;
+                    }
+                } catch (e) {}
+
+                let studentScores = {
+                    fullName: s.fullName || s.username || 'Học sinh',
+                    math: { btvn: null, kt15p: null, giuaky: null, cuoiky: null },
+                    english: { btvn: null, kt15p: null, giuaky: null, cuoiky: null }
+                };
+
+                for (let a of assignments) {
+                    const assignId = a.idAssignments || a.id;
+                    try {
+                        const subRes = await fetch(`/api/submissions/check?assignmentId=${assignId}&userId=${targetProfileId}`);
+                        if (subRes.ok) {
+                            const sub = await subRes.json();
+                            if (sub && (sub.grade != null || sub.score != null)) {
+                                const scoreVal = parseFloat(sub.grade != null ? sub.grade : sub.score);
+                                let textCheck = (a.title + " " + (a.description || "")).toLowerCase();
+
+                                if (textCheck.includes('anh') || textCheck.includes('tiếng anh') || textCheck.includes('english')) {
+                                    if (textCheck.includes('15')) studentScores.english.kt15p = scoreVal;
+                                    else if (textCheck.includes('giữa kỳ') || textCheck.includes('giua ky')) studentScores.english.giuaky = scoreVal;
+                                    else if (textCheck.includes('cuối kỳ') || textCheck.includes('cuoi ky')) studentScores.english.cuoiky = scoreVal;
+                                    else studentScores.english.btvn = scoreVal;
+                                } else {
+                                    if (textCheck.includes('15')) studentScores.math.kt15p = scoreVal;
+                                    else if (textCheck.includes('giữa kỳ') || textCheck.includes('giua ky')) studentScores.math.giuaky = scoreVal;
+                                    else if (textCheck.includes('cuối kỳ') || textCheck.includes('cuoi ky')) studentScores.math.cuoiky = scoreVal;
+                                    else studentScores.math.btvn = scoreVal;
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                currentStudentsWithScores.push(studentScores);
+            }
+
+            renderScoreTables(currentStudentsWithScores);
+        } catch (err) {
+            console.error("Lỗi tải bảng điểm:", err);
+            renderScoreTables([]);
+        }
+    }
+
+    function renderScoreTables(list) {
+        const mathBody = document.getElementById('mathTableBody');
+        const engBody = document.getElementById('englishTableBody');
+
+        mathBody.innerHTML = '';
+        engBody.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            const emptyRow = `<tr><td colspan="6" style="text-align: center; color: var(--text-sub);">Chưa có dữ liệu học sinh hoặc điểm số.</td></tr>`;
+            mathBody.innerHTML = emptyRow;
+            engBody.innerHTML = emptyRow;
+            return;
+        }
+
+        list.forEach(item => {
+            // Tính ĐTB Môn Toán (bắt buộc phải đủ 4 đầu điểm)
+            let mathFull = (item.math.btvn !== null && item.math.kt15p !== null && item.math.giuaky !== null && item.math.cuoiky !== null);
+            let mathAvg = mathFull ? ((item.math.btvn + item.math.kt15p + item.math.giuaky + item.math.cuoiky) / 4).toFixed(1) : '-';
+
+            // Tính ĐTB Môn Tiếng Anh (bắt buộc phải đủ 4 đầu điểm)
+            let engFull = (item.english.btvn !== null && item.english.kt15p !== null && item.english.giuaky !== null && item.english.cuoiky !== null);
+            let engAvg = engFull ? ((item.english.btvn + item.english.kt15p + item.english.giuaky + item.english.cuoiky) / 4).toFixed(1) : '-';
+
+            mathBody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 500; color: var(--text-main); text-align: left;">${item.fullName}</td>
+                    <td>${item.math.btvn !== null ? item.math.btvn : '-'}</td>
+                    <td>${item.math.kt15p !== null ? item.math.kt15p : '-'}</td>
+                    <td>${item.math.giuaky !== null ? item.math.giuaky : '-'}</td>
+                    <td>${item.math.cuoiky !== null ? item.math.cuoiky : '-'}</td>
+                    <td style="font-weight: 700; color: #10b981;">${mathAvg}</td>
+                </tr>
+            `;
+
+            engBody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 500; color: var(--text-main); text-align: left;">${item.fullName}</td>
+                    <td>${item.english.btvn !== null ? item.english.btvn : '-'}</td>
+                    <td>${item.english.kt15p !== null ? item.english.kt15p : '-'}</td>
+                    <td>${item.english.giuaky !== null ? item.english.giuaky : '-'}</td>
+                    <td>${item.english.cuoiky !== null ? item.english.cuoiky : '-'}</td>
+                    <td style="font-weight: 700; color: #10b981;">${engAvg}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function filterTables() {
+        const keyword = document.getElementById('searchStudentInput').value.toLowerCase();
+        const filtered = currentStudentsWithScores.filter(item => {
+            return item.fullName.toLowerCase().includes(keyword);
+        });
+        renderScoreTables(filtered);
+    }
+
+    function exportExcelSubject(subjectName) {
+        alert(`Đang xuất file Excel cho môn: ${subjectName} thành công!`);
+    }
+
+    function exportExcelAll() {
+        alert('Đang xuất file Excel tổng hợp tất cả các môn trong lớp thành công!');
+    }
+
+    function resetToClasses() {
+        renderClassesGrid(allClasses);
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
+    profileWrapper.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+    });
+
+    window.addEventListener('click', function() {
+        if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show');
+    });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+
+</body>
+</html>
