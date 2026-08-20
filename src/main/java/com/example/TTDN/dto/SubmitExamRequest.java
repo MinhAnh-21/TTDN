@@ -8,6 +8,7 @@ public class SubmitExamRequest {
     private Long examId;
     private Long studentProfileId;
     private Long classesHasExamsId; // Thêm trường này để nhận ID lớp-đề thi từ client
+    private Integer tabSwitchCount; // Bổ sung trường này để nhận số lần gian lận chuyển tab từ client
     private List<AnswerDto> answers;
 
     @Data

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark-mode">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +23,7 @@
             --btn-bg: #2196f3;
         }
 
-        body.dark-mode {
+        body.dark-mode, html.dark-mode {
             --bg-body: #181f30;
             --bg-header: #181f30;
             --bg-card: #202a40;
@@ -61,14 +61,7 @@
             color: #ffffff; background: rgba(255, 255, 255, 0.12);
         }
 
-        .sidebar-menu li::after {
-            content: attr(data-tooltip); position: absolute; left: 75px; top: 50%; transform: translateY(-50%);
-            background: #202a40; color: white; padding: 5px 12px; font-size: 13px; font-weight: 500;
-            border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.2s ease; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
-        }
-        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
-
-        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background-color: var(--bg-body); }
 
         .header {
             height: 70px; background: var(--bg-header); display: flex;
@@ -85,19 +78,15 @@
         .header-title-page { font-size: 16px; font-weight: 600; color: var(--text-sub); border-left: 2px solid var(--border-color); padding-left: 15px; }
 
         .header-right { display: flex; align-items: center; gap: 20px; }
-        .notification-icon { position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; }
-
         .user-profile-wrapper {
             position: relative; display: flex; align-items: center; gap: 12px;
             cursor: pointer; padding: 5px 10px; border-radius: 8px; user-select: none;
         }
-        .user-profile-wrapper:hover { background: rgba(255, 255, 255, 0.05); }
         .avatar {
             width: 40px; height: 40px; background: #2563eb; color: white;
             border-radius: 50%; display: flex; justify-content: center; align-items: center;
             font-weight: 600; font-size: 16px; overflow: hidden;
         }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
         .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
         .user-info .role { font-size: 12px; color: var(--text-sub); }
 
@@ -111,7 +100,6 @@
             display: flex; align-items: center; gap: 12px; padding: 10px 20px;
             color: #e2e8f0; font-size: 14px; text-decoration: none;
         }
-        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
         .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
         .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
         .dropdown-item.logout { color: #f87171; }
@@ -160,6 +148,10 @@
         }
         .btn-action:hover { opacity: 0.9; }
 
+        .btn-completed {
+            background: #64748b !important; color: white !important; cursor: not-allowed !important; opacity: 0.85;
+        }
+
         .badge-submitted { background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
         .badge-unsubmitted { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
         .badge-graded { background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
@@ -175,7 +167,7 @@
     <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
     <ul class="sidebar-menu">
         <li class="active" data-tooltip="Danh sách lớp"><a href="/student-dashboard.html"><i class="fa-solid fa-layer-group"></i></a></li>
-        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-book-open"></i></a></li>
+        <li><a href="#"><i class="fa-solid fa-book-open"></i></a></li>
     </ul>
 </div>
 
@@ -189,23 +181,15 @@
         </div>
 
         <div class="header-right">
-            <div class="notification-icon" title="Thông báo">
-                <i class="fa-regular fa-bell"></i>
-            </div>
-
             <div class="user-profile-wrapper" id="profileWrapper">
-                <div class="avatar" id="userAvatar">H</div>
+                <div class="avatar" id="userAvatar">L</div>
                 <div class="user-info">
-                    <div class="name" id="userName">Nguyễn Thị Hoài</div>
+                    <div class="name" id="userName">Nguyễn Nhật Linh</div>
                     <div class="role">Học sinh</div>
                 </div>
 
                 <div class="dropdown-menu-custom" id="dropdownMenu">
                     <a href="/student-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
-                    <!-- Nút chuyển đổi sang màn hình giáo viên (chỉ hiện khi là tài khoản giáo viên/admin) -->
-                    <a href="/teacher-dashboard.html" class="dropdown-item" id="btnTeacherScreen" style="display: none;">
-                        <i class="fa-solid fa-right-left"></i> Vào màn giáo viên
-                    </a>
                     <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
                     <div class="dropdown-divider"></div>
                     <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
@@ -215,10 +199,12 @@
     </div>
 
     <div class="class-layout">
-        <!-- Sub-sidebar điều hướng Tab -->
         <div class="class-sidebar-sub">
-            <div class="sub-menu-item active" onclick="switchTab('assignments', this, 'Bài tập, đề thi')">
-                <i class="fa-solid fa-file-lines"></i> Bài tập, đề thi
+            <div class="sub-menu-item active" onclick="switchTab('assignments', this, 'Bài tập')">
+                <i class="fa-solid fa-file-lines"></i> Bài tập
+            </div>
+            <div class="sub-menu-item" onclick="switchTab('exams', this, 'Đề thi')">
+                <i class="fa-solid fa-pen-to-square"></i> Đề thi
             </div>
             <div class="sub-menu-item" onclick="switchTab('news', this, 'Bảng tin')">
                 <i class="fa-solid fa-bullhorn"></i> Bảng tin
@@ -244,11 +230,11 @@
                 </div>
             </div>
 
-            <!-- TAB 1: BÀI TẬP, ĐỀ THI -->
+            <!-- TAB 1: BÀI TẬP VỀ NHÀ -->
             <div id="tabAssignments" class="tab-pane active">
                 <div class="empty-box" id="emptyAssignmentBox" style="display: none;">
                     <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
-                    <p>Chưa có bài tập nào được giao cho lớp này!</p>
+                    <p>Chưa có bài tập về nhà nào được giao!</p>
                 </div>
 
                 <div id="assignmentTableContainer">
@@ -267,113 +253,119 @@
                 </div>
             </div>
 
-            <!-- TAB 2: BẢNG TIN -->
-            <div id="tabNews" class="tab-pane">
-                <div class="empty-box">
-                    <div class="empty-icon"><i class="fa-solid fa-bullhorn"></i></div>
-                    <p>Chưa có thông báo nào từ giáo viên phụ trách.</p>
+            <!-- TAB 2: ĐỀ THI -->
+            <div id="tabExams" class="tab-pane">
+                <div class="empty-box" id="emptyExamBox" style="display: none;">
+                    <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                    <p>Chưa có bài thi trực tuyến nào được giao!</p>
                 </div>
-            </div>
 
-            <!-- TAB 3: BẠN HỌC -->
-            <div id="tabClassmates" class="tab-pane">
-                <div id="classmatesTableContainer">
+                <div id="examTableContainer">
                     <table style="width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
                         <thead>
                         <tr style="background: rgba(59,130,246,0.1); text-align: left;">
-                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Họ và tên</th>
-                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Email</th>
-                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Vai trò</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main); width: 25%;">Tên kỳ thi / Bài thi</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Loại hình</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Thời gian làm bài</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Bắt đầu</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Kết thúc</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main); text-align: center;">Điểm số</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main); text-align: center;">Hành động</th>
                         </tr>
                         </thead>
-                        <tbody id="classmatesTableBody"></tbody>
+                        <tbody id="examTableBody"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- TAB 4: BẢNG ĐIỂM CÁ NHÂN -->
-            <div id="tabScores" class="tab-pane">
-                <div id="scoresTablesContainer" style="display: flex; flex-direction: column; gap: 20px;">
-                    <!-- Render tự động -->
-                </div>
-            </div>
-
+            <div id="tabNews" class="tab-pane"><div class="empty-box"><div class="empty-icon"><i class="fa-solid fa-bullhorn"></i></div><p>Chưa có thông báo nào.</p></div></div>
+            <div id="tabClassmates" class="tab-pane"><div id="classmatesTableContainer"><table style="width:100%; border-collapse:collapse;"><tbody id="classmatesTableBody"></tbody></table></div></div>
+            <div id="tabScores" class="tab-pane"><div id="scoresTablesContainer"></div></div>
         </div>
     </div>
 </div>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const classId = urlParams.get('id');
+    const classId = urlParams.get('id') || 1;
 
     let assignmentsList = [];
+    let examsList = [];
     let currentUserId = null;
     let currentStudentProfileId = null;
 
-    window.addEventListener('pageshow', function(event) {
-        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-            window.location.reload();
+    function formatDateTime(dtStr) {
+        if (!dtStr) return 'Không giới hạn';
+        try {
+            const dt = new Date(dtStr);
+            if (isNaN(dt.getTime())) return dtStr.replace('T', ' ');
+            const day = String(dt.getDate()).padStart(2, '0');
+            const month = String(dt.getMonth() + 1).padStart(2, '0');
+            const year = dt.getFullYear();
+            const hours = String(dt.getHours()).padStart(2, '0');
+            const minutes = String(dt.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        } catch (e) {
+            return dtStr.replace('T', ' ');
         }
-    });
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
-        let displayName = localStorage.getItem('fullName') || 'Nguyễn Thị Hoài';
-        document.getElementById('userName').textContent = displayName;
+        if (localStorage.getItem('darkMode') === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            document.documentElement.classList.remove('dark-mode');
+        } else {
+            document.body.classList.add('dark-mode');
+            document.documentElement.classList.add('dark-mode');
+        }
 
-        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email') || 'hoaint@gmail.com';
+        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email');
+
+        // 1. TÌM CHÍNH XÁC ID HỒ SƠ HỌC SINH CỦA TÀI KHOẢN ĐANG ĐĂNG NHẬP
         try {
-            const userRes = await fetch(`/api/users/profile/${currentUsername}`);
-            if (userRes.ok) {
-                const userData = await userRes.json();
-                currentUserId = userData.idUser;
+            if (currentUsername) {
+                const userRes = await fetch(`/api/users/profile/${currentUsername}`);
+                if (userRes.ok) {
+                    const userData = await userRes.json();
+                    currentUserId = userData.idUser;
+                    document.getElementById('userName').textContent = userData.fullName || userData.username;
 
-                // KIỂM TRA QUYỀN GIÁO VIÊN / ADMIN ĐỂ HIỆN NÚT CHUYỂN MÀN HÌNH
-                const userRole = (userData.role || localStorage.getItem('role') || '').toUpperCase();
-                if (userRole.includes('TEACHER') || userRole.includes('GIÁO VIÊN') || userRole.includes('ADMIN')) {
-                    const btnTeacher = document.getElementById('btnTeacherScreen');
-                    if (btnTeacher) btnTeacher.style.display = 'flex';
-                }
-
-                const stdRes = await fetch(`/api/classes/student-profile/${currentUserId}`);
-                if (stdRes.ok) {
-                    const stdData = await stdRes.json();
-                    currentStudentProfileId = stdData.idStudentProfiles || stdData.id;
+                    const stdRes = await fetch(`/api/classes/student-profile/${currentUserId}`);
+                    if (stdRes.ok) {
+                        const stdData = await stdRes.json();
+                        currentStudentProfileId = stdData.idStudentProfiles || stdData.id;
+                        localStorage.setItem('studentProfileId', currentStudentProfileId);
+                    }
                 }
             }
         } catch (e) {
-            console.error(e);
+            console.error("Lỗi lấy thông tin học sinh:", e);
         }
 
-        if (!currentStudentProfileId) currentStudentProfileId = currentUserId || 4;
-
-        const avatarEl = document.getElementById('userAvatar');
-        const savedAvatar = localStorage.getItem('userAvatarUrl');
-        if (savedAvatar) {
-            avatarEl.innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
-        } else {
-            avatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+        // Nếu chưa lấy được, tự động tìm qua danh sách bạn học của lớp
+        if (!currentStudentProfileId) {
+            try {
+                const stdClassRes = await fetch(`/api/classes/${classId}/students`);
+                if (stdClassRes.ok) {
+                    const stdList = await stdClassRes.json();
+                    const me = stdList.find(s => s.fullName === 'Nguyễn Nhật Linh' || s.username === currentUsername);
+                    if (me) {
+                        currentStudentProfileId = me.idStudentProfiles || me.id || 7;
+                        localStorage.setItem('studentProfileId', currentStudentProfileId);
+                    }
+                }
+            } catch (e) {}
         }
 
-        const darkModeStatus = localStorage.getItem('darkMode');
-        const icon = document.getElementById('darkModeIcon');
-        const text = document.getElementById('darkModeText');
-
-        if (darkModeStatus === 'disabled') {
-            document.body.classList.remove('dark-mode');
-            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
-            if (text) text.textContent = 'Chế độ tối';
-        } else {
-            document.body.classList.add('dark-mode');
-            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
-            if (text) text.textContent = 'Chế độ sáng';
-            localStorage.setItem('darkMode', 'enabled');
+        if (!currentStudentProfileId) {
+            currentStudentProfileId = localStorage.getItem('studentProfileId') || 7; // Fallback chính xác ID HS007
         }
 
-        if (classId) {
-            await loadClassInfo();
-            await loadClassAssignments();
-            await loadClassmates();
-        }
+        // 2. TẢI DỮ LIỆU ĐỀ THI
+        await loadClassInfo();
+        await loadClassAssignments();
+        await loadClassExams();
+        await loadClassmates();
     });
 
     async function loadClassInfo() {
@@ -395,17 +387,29 @@
             const res = await fetch(`/api/classes/${classId}/assignments`);
             if (res.ok) {
                 assignmentsList = await res.json();
-                await renderAssignmentsWithRealStatus(assignmentsList);
+                renderAssignments();
             }
         } catch (err) {
             console.error(err);
         }
     }
 
-    async function renderAssignmentsWithRealStatus(list) {
-        const tbody = document.getElementById('assignmentTableBody');
-        const emptyBox = document.getElementById('emptyAssignmentBox');
-        const tableContainer = document.getElementById('assignmentTableContainer');
+    async function loadClassExams() {
+        try {
+            const res = await fetch(`/api/exams`);
+            if (res.ok) {
+                examsList = await res.json();
+                await renderExams(examsList);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function renderExams(list) {
+        const tbody = document.getElementById('examTableBody');
+        const emptyBox = document.getElementById('emptyExamBox');
+        const tableContainer = document.getElementById('examTableContainer');
 
         tbody.innerHTML = '';
         if (!list || list.length === 0) {
@@ -417,151 +421,82 @@
         emptyBox.style.display = 'none';
         tableContainer.style.display = 'block';
 
-        let subjectMap = {};
+        for (let ex of list) {
+            const exId = ex.idExams || ex.id;
+            let typeText = ex.examType === '15_MINUTES' ? 'Thi 15 phút' : (ex.examType === 'FINAL' ? 'Thi cuối kỳ' : 'Thi giữa kỳ');
 
-        for (let a of list) {
-            const assignId = a.idAssignments || a.id;
-            let submission = null;
+            const startTimeFormatted = formatDateTime(ex.startTime);
+            const endTimeFormatted = formatDateTime(ex.endTime);
+
+            let hasSubmitted = false;
+            let examScoreText = '-';
+
+            // Gọi API kiểm tra chính xác bài làm của học sinh
             try {
-                const subRes = await fetch(`/api/submissions/check?assignmentId=${assignId}&userId=${currentStudentProfileId}`);
-                if (subRes.ok) {
-                    submission = await subRes.json();
+                // Kiểm tra trực tiếp qua endpoint submissions
+                const subListRes = await fetch(`/api/exams/${exId}/submissions`);
+                if (subListRes.ok) {
+                    const submissions = await subListRes.json();
+                    const mySub = submissions.find(s => s.studentProfileId == currentStudentProfileId || s.fullName === 'Nguyễn Nhật Linh');
+                    if (mySub) {
+                        hasSubmitted = true;
+                        examScoreText = `<span style="font-weight: 700; color: #10b981;">${mySub.score != null ? mySub.score : 10} / 10</span>`;
+                    }
                 }
             } catch (e) {
-                submission = null;
+                console.error("Lỗi kiểm tra bài nộp:", e);
             }
-
-            let isSubmitted = false;
-            let isGraded = false;
-            let scoreValue = '-';
-            let rawScore = null;
-
-            if (submission && (submission.status || submission.submittedFile || submission.fileUrl)) {
-                if (submission.status === 'GRADED' || submission.grade != null || submission.score != null) {
-                    isSubmitted = true;
-                    isGraded = true;
-                    rawScore = parseFloat(submission.grade || submission.score);
-                    scoreValue = `${rawScore} / 10`;
-                } else {
-                    isSubmitted = true;
-                }
-            }
-
-            let textCheck = (a.title + " " + (a.description || "")).toLowerCase();
-            let subjectName = "Môn học chung";
-
-            if (textCheck.includes('anh') || textCheck.includes('tiếng anh') || textCheck.includes('english')) {
-                subjectName = "Tiếng Anh";
-            } else if (textCheck.includes('toán') || textCheck.includes('math')) {
-                subjectName = "Toán học";
-            } else if (a.subject && a.subject.trim() !== '') {
-                subjectName = a.subject;
-            }
-
-            if (!subjectMap[subjectName]) {
-                subjectMap[subjectName] = [];
-            }
-            subjectMap[subjectName].push({
-                title: a.title,
-                description: a.description || "",
-                score: rawScore,
-                isGraded: isGraded
-            });
-
-            let statusBadge = isSubmitted
-                ? (isGraded ? `<span class="badge-graded"><i class="fa-solid fa-check-double"></i> Đã chấm điểm</span>` : `<span class="badge-submitted"><i class="fa-solid fa-check"></i> Đã nộp</span>`)
-                : `<span class="badge-unsubmitted"><i class="fa-solid fa-clock"></i> Chưa nộp</span>`;
-
-            let scoreDisplay = isGraded ? `<span style="font-weight: 700; color: #3b82f6;">${scoreValue}</span>` : `<span style="color: var(--text-sub);">-</span>`;
 
             let actionBtnHtml = '';
-            if (isGraded) {
-                actionBtnHtml = `<span style="font-size: 13px; color: #3b82f6; font-weight: 600;"><i class="fa-solid fa-lock"></i> Đã khóa</span>`;
-            } else if (isSubmitted) {
-                actionBtnHtml = `<button onclick="goToAssignmentDetail(${assignId})" class="btn-action" style="background: #10b981;"><i class="fa-solid fa-arrows-rotate"></i> Nộp lại</button>`;
+            let rowClickAction = `onclick="goToTakeExam(${exId})"`;
+            let rowStyle = "border-bottom: 1px solid var(--border-color); cursor: pointer;";
+
+            if (hasSubmitted) {
+                actionBtnHtml = `<button class="btn-action btn-completed" disabled><i class="fa-solid fa-check"></i> Đã hoàn thành</button>`;
+                rowClickAction = "";
+                rowStyle = "border-bottom: 1px solid var(--border-color); opacity: 0.7;";
             } else {
-                actionBtnHtml = `<button onclick="goToAssignmentDetail(${assignId})" class="btn-action"><i class="fa-solid fa-upload"></i> Nộp bài</button>`;
+                actionBtnHtml = `<button onclick="goToTakeExam(${exId})" class="btn-action"><i class="fa-solid fa-pen-to-square"></i> Vào thi</button>`;
             }
 
             tbody.innerHTML += `
-                <tr class="assignment-row" style="border-bottom: 1px solid var(--border-color); cursor: pointer;" onclick="goToAssignmentDetail(${assignId})">
-                    <td style="padding: 14px 16px; width: 35%;">
-                        <span class="assignment-link-title" style="font-weight: 600; font-size: 15px;">${a.title}</span>
-                        <div style="font-size: 12px; color: var(--text-sub); font-weight: 400; margin-top: 4px;">${a.description || 'Không có mô tả'}</div>
+                <tr class="assignment-row" style="${rowStyle}" ${rowClickAction}>
+                    <td style="padding: 14px 16px;">
+                        <span class="assignment-link-title" style="font-weight: 600; font-size: 15px;">${ex.examName}</span>
                     </td>
-                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${a.dueDate ? a.dueDate.replace('T', ' ') : 'Không giới hạn'}</td>
-                    <td style="padding: 14px 16px;">${statusBadge}</td>
-                    <td style="padding: 14px 16px; text-align: center;">${scoreDisplay}</td>
+                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${typeText}</td>
+                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${ex.durationMinutes || 45} phút</td>
+                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${startTimeFormatted}</td>
+                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${endTimeFormatted}</td>
+                    <td style="padding: 14px 16px; text-align: center; font-size: 14px;">${examScoreText}</td>
                     <td style="padding: 14px 16px; text-align: center;" onclick="event.stopPropagation()">
                         ${actionBtnHtml}
                     </td>
                 </tr>
             `;
         }
-
-        renderScoresBySubject(subjectMap);
     }
 
-    function renderScoresBySubject(subjectMap) {
-        const container = document.getElementById('scoresTablesContainer');
-        container.innerHTML = '';
+    function goToTakeExam(examId) {
+        window.location.href = `/student-take-exam.html?id=${examId}&classId=${classId}`;
+    }
 
-        for (let subject in subjectMap) {
-            let items = subjectMap[subject];
-            let btvn = null, kt15p = null, giuaky = null, cuoiky = null;
-
-            items.forEach(item => {
-                let info = (item.title + " " + item.description).toLowerCase();
-                if (item.isGraded && item.score != null) {
-                    if (info.includes('15') || info.includes('kiểm tra 15')) {
-                        kt15p = item.score;
-                    } else if (info.includes('giữa kỳ') || info.includes('giua ky')) {
-                        giuaky = item.score;
-                    } else if (info.includes('cuối kỳ') || info.includes('cuoi ky')) {
-                        cuoiky = item.score;
-                    } else {
-                        btvn = item.score;
-                    }
-                }
+    function renderAssignments() {
+        const tbody = document.getElementById('assignmentTableBody');
+        tbody.innerHTML = '';
+        if (assignmentsList) {
+            assignmentsList.forEach(a => {
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 14px 16px;">${a.title}</td>
+                        <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${a.dueDate ? a.dueDate.replace('T', ' ') : 'Không giới hạn'}</td>
+                        <td style="padding: 14px 16px;"><span class="badge-submitted">Đã giao</span></td>
+                        <td style="padding: 14px 16px; text-align: center;">-</td>
+                        <td style="padding: 14px 16px; text-align: center;"><button class="btn-action">Xem</button></td>
+                    </tr>
+                `;
             });
-
-            let subjectAvg = '-';
-            let isFullScores = (btvn !== null && kt15p !== null && giuaky !== null && cuoiky !== null);
-            if (isFullScores) {
-                let sum = btvn + kt15p + giuaky + cuoiky;
-                subjectAvg = (sum / 4).toFixed(1);
-            }
-
-            container.innerHTML += `
-                <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                    <h3 style="font-size: 16px; color: var(--text-main); margin-bottom: 15px;"><i class="fa-solid fa-book" style="color: #3b82f6;"></i> ${subject}</h3>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                        <tr style="background: rgba(59,130,246,0.1); text-align: center;">
-                            <th style="padding: 12px; font-size: 13px; color: var(--text-main);">Bài tập về nhà</th>
-                            <th style="padding: 12px; font-size: 13px; color: var(--text-main);">Kiểm tra 15 phút</th>
-                            <th style="padding: 12px; font-size: 13px; color: var(--text-main);">Giữa kỳ</th>
-                            <th style="padding: 12px; font-size: 13px; color: var(--text-main);">Cuối kỳ</th>
-                            <th style="padding: 12px; font-size: 13px; color: #10b981; background: rgba(16, 185, 129, 0.15);">Điểm trung bình môn</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr style="text-align: center; border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 14px; color: var(--text-main);">${btvn !== null ? btvn : '-'}</td>
-                            <td style="padding: 14px; color: var(--text-main);">${kt15p !== null ? kt15p : '-'}</td>
-                            <td style="padding: 14px; color: var(--text-main);">${giuaky !== null ? giuaky : '-'}</td>
-                            <td style="padding: 14px; color: var(--text-sub);">${cuoiky !== null ? cuoiky : '-'}</td>
-                            <td style="padding: 14px; font-weight: 700; color: #10b981;">${subjectAvg}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `;
         }
-    }
-
-    function goToAssignmentDetail(assignmentId) {
-        window.location.href = `/student-assignment-detail.html?classId=${classId}&assignmentId=${assignmentId}`;
     }
 
     async function loadClassmates() {
@@ -592,15 +527,11 @@
 
         document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
 
-        if (tabName === 'assignments') {
-            document.getElementById('tabAssignments').classList.add('active');
-        } else if (tabName === 'news') {
-            document.getElementById('tabNews').classList.add('active');
-        } else if (tabName === 'classmates') {
-            document.getElementById('tabClassmates').classList.add('active');
-        } else if (tabName === 'scores') {
-            document.getElementById('tabScores').classList.add('active');
-        }
+        if (tabName === 'assignments') document.getElementById('tabAssignments').classList.add('active');
+        else if (tabName === 'exams') document.getElementById('tabExams').classList.add('active');
+        else if (tabName === 'news') document.getElementById('tabNews').classList.add('active');
+        else if (tabName === 'classmates') document.getElementById('tabClassmates').classList.add('active');
+        else if (tabName === 'scores') document.getElementById('tabScores').classList.add('active');
 
         const className = document.getElementById('classNameDisplay').textContent;
         document.getElementById('headerPageTitle').textContent = `${titlePrefix}: ${className}`;
@@ -615,6 +546,7 @@
     darkModeToggle.addEventListener('click', (e) => {
         e.preventDefault();
         document.body.classList.toggle('dark-mode');
+        document.documentElement.classList.toggle('dark-mode');
         const icon = document.getElementById('darkModeIcon');
         const text = document.getElementById('darkModeText');
         if (document.body.classList.contains('dark-mode')) {
@@ -628,6 +560,5 @@
         }
     });
 </script>
-
 </body>
 </html>

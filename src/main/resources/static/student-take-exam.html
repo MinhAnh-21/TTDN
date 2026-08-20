@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark-mode">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm bài thi trực tuyến - Học sinh</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.08);
+            --input-bg: #f0f3f6;
+            --btn-bg: #2196f3;
+        }
+
+        body.dark-mode, html.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --input-bg: #111726;
+            --btn-bg: #2563eb;
+        }
+
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 100px; background: var(--bg-sidebar); display: flex; flex-direction: column; align-items: center; padding: 22px 0; z-index: 10; }
+        .sidebar-logo { width: 52px; height: 52px; background: white; border-radius: 14px; display: flex; justify-content: center; align-items: center; color: #2196f3; font-size: 24px; font-weight: bold; margin-bottom: 28px; }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+        .sidebar-menu { list-style: none; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; }
+        .sidebar-menu li a { width: 56px; height: 56px; display: flex; justify-content: center; align-items: center; color: rgba(255, 255, 255, 0.7); font-size: 22px; border-radius: 16px; text-decoration: none; }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { color: #ffffff; background: rgba(255, 255, 255, 0.15); }
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background-color: var(--bg-body); }
+        .header { height: 70px; background: var(--bg-header); display: flex; justify-content: space-between; align-items: center; padding: 0 35px; border-bottom: 1px solid var(--border-color); }
+        .header-title { font-size: 18px; font-weight: 600; color: var(--text-main); }
+        .timer-box { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 15px; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .content { padding: 30px 35px; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .exam-card { background: var(--bg-card); padding: 35px; border-radius: 14px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 30px; }
+        .warning-banner { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #d97706; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+        .btn-submit { background: #10b981; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; }
+        .btn-submit:hover { opacity: 0.9; }
+
+        .question-content-box {
+            background: rgba(33, 150, 243, 0.06);
+            border-left: 4px solid #2196f3;
+            padding: 16px 20px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 15px;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-main);
+            white-space: pre-line;
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+    </style>
+    <script>
+        if (localStorage.getItem('darkMode') === 'enabled' || localStorage.getItem('darkMode') === null) {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+</head>
+<body class="dark-mode">
+
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li class="active"><a href="/student-dashboard.html" id="backLink"><i class="fa-solid fa-house"></i></a></li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <div class="header">
+        <div class="header-title" id="examTitleHeader">Đang tải đề thi...</div>
+        <div class="timer-box" id="timerDisplay"><i class="fa-regular fa-clock"></i> 00:00</div>
+    </div>
+
+    <div class="content">
+        <div class="warning-banner">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span><strong>Cảnh báo chống gian lận:</strong> Hệ thống đang giám sát hành vi của bạn. Nếu bạn rời khỏi màn hình làm bài, số lần vi phạm sẽ bị ghi lại! (Số lần vi phạm: <span id="violationCount">0</span>)</span>
+        </div>
+
+        <div class="exam-card" id="examQuestionsContainer"></div>
+
+        <div style="text-align: right; margin-bottom: 40px;">
+            <button type="button" class="btn-submit" onclick="submitExam()"><i class="fa-solid fa-paper-plane"></i> Nộp bài thi</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('id') || 1;
+    const classId = urlParams.get('classId') || 1;
+
+    if (classId) {
+        document.getElementById('backLink').href = `/student-class-detail.html?id=${classId}`;
+    }
+
+    let tabSwitchCount = 0;
+    let examTimer = null;
+    let timeLeftSeconds = 45 * 60;
+    let loadedExamData = null;
+    let currentStudentProfileId = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        if (localStorage.getItem('darkMode') === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            document.documentElement.classList.remove('dark-mode');
+        } else {
+            document.body.classList.add('dark-mode');
+            document.documentElement.classList.add('dark-mode');
+        }
+
+        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email');
+        if (currentUsername) {
+            try {
+                const userRes = await fetch(`/api/users/profile/${currentUsername}`);
+                if (userRes.ok) {
+                    const userData = await userRes.json();
+                    const stdRes = await fetch(`/api/classes/student-profile/${userData.idUser}`);
+                    if (stdRes.ok) {
+                        const stdData = await stdRes.json();
+                        currentStudentProfileId = stdData.idStudentProfiles || stdData.id;
+                        localStorage.setItem('studentProfileId', currentStudentProfileId);
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        if (!currentStudentProfileId) {
+            currentStudentProfileId = localStorage.getItem('studentProfileId');
+        }
+
+        if (currentStudentProfileId) {
+            try {
+                const checkRes = await fetch(`/api/exams/check-submission?examId=${examId}&studentProfileId=${currentStudentProfileId}`);
+                if (checkRes.ok) {
+                    const status = await checkRes.json();
+                    if (status && status.submitted === true) {
+                        alert("Bạn đã hoàn thành bài thi này rồi! Không thể vào làm lại.");
+                        window.location.replace(`/student-class-detail.html?id=${classId}`);
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        await loadExamDataFromAPI();
+
+        document.addEventListener("visibilitychange", function () {
+            if (document.hidden) {
+                tabSwitchCount++;
+                document.getElementById('violationCount').textContent = tabSwitchCount;
+                alert("CẢNH BÁO: Bạn vừa rời khỏi màn hình làm bài! (" + tabSwitchCount + " lần)");
+            }
+        });
+    });
+
+    async function loadExamDataFromAPI() {
+        try {
+            const res = await fetch(`/api/exams/${examId}/detail`);
+            if (res.ok) {
+                const data = await res.json();
+                loadedExamData = data.exam;
+
+                document.getElementById('examTitleHeader').textContent = loadedExamData.examName;
+                timeLeftSeconds = (loadedExamData.durationMinutes || 45) * 60;
+                startCountdown();
+
+                renderStudentExamInterface(loadedExamData, data.questions);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function startCountdown() {
+        const timerEl = document.getElementById('timerDisplay');
+        examTimer = setInterval(() => {
+            if (timeLeftSeconds <= 0) {
+                clearInterval(examTimer);
+                alert("Hết giờ làm bài! Hệ thống tự động nộp bài.");
+                submitExam();
+                return;
+            }
+            timeLeftSeconds--;
+            let m = Math.floor(timeLeftSeconds / 60);
+            let s = timeLeftSeconds % 60;
+            timerEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    function renderStudentExamInterface(exam, questions) {
+        const container = document.getElementById('examQuestionsContainer');
+        container.innerHTML = '';
+
+        const format = exam.examFormat || 'ESSAY';
+        const note = exam.note || 'Không có ghi chú.';
+
+        if (format === 'MULTIPLE_CHOICE') {
+            let htmlContent = `
+                <h3 style="margin-bottom: 10px; color: var(--text-main);">${exam.examName}</h3>
+                <div style="background:var(--input-bg); padding:15px; border-radius:8px; margin-bottom:20px; color: var(--text-sub);">
+                    <p><b>Hướng dẫn:</b> ${note}</p>
+                </div>
+                <hr style="margin: 20px 0; border-color: var(--border-color);">
+            `;
+
+            if (questions && questions.length > 0) {
+                questions.forEach((qItem, idx) => {
+                    const qNum = idx + 1;
+                    const q = qItem.question;
+                    const options = qItem.options;
+
+                    htmlContent += `
+                        <div class="question-item" style="margin-bottom: 25px; color: var(--text-main);">
+                            <div style="font-weight: 600; margin-bottom: 8px; color:#2196f3;">Câu ${qNum}:</div>
+                            <div class="question-content-box">${q.content || q.questionText}</div>
+                            <div style="display: flex; flex-direction: column; gap: 10px; margin-left: 10px;">
+                    `;
+                    options.forEach(opt => {
+                        htmlContent += `
+                            <label style="cursor:pointer; display: flex; align-items: center; gap: 10px;">
+                                <input type="radio" name="q_${q.idQuestions}" value="${opt.idQuestionOptions}"> ${opt.optionText}
+                            </label>
+                        `;
+                    });
+                    htmlContent += `</div></div>`;
+                });
+            }
+            container.innerHTML = htmlContent;
+        } else {
+            // Hiển thị đầy đủ nội dung bóc tách của đề thi tự luận
+            let htmlContent = `
+                <h3 style="margin-bottom: 10px; color: var(--text-main); font-size:18px;">${exam.examName} (Tự luận)</h3>
+                <div style="background:var(--input-bg); padding:15px; border-radius:8px; margin-bottom:20px; color: var(--text-sub);">
+                    <p><b>Hướng dẫn:</b> ${note}</p>
+                </div>
+                <hr style="margin: 20px 0; border-color: var(--border-color);">
+            `;
+
+            if (questions && questions.length > 0) {
+                questions.forEach((qItem, idx) => {
+                    const qNum = idx + 1;
+                    const q = qItem.question;
+                    const qText = q.content || q.questionText;
+
+                    htmlContent += `
+                        <div class="essay-question-item" style="margin-bottom: 35px; color: var(--text-main);">
+                            <div style="font-weight: 600; margin-bottom: 10px; font-size: 16px; color: #2196f3;"><i class="fa-solid fa-file-pen"></i> Câu ${qNum}:</div>
+                            <div class="question-content-box">${qText}</div>
+                            <div class="form-group" style="margin-top: 12px;">
+                                <textarea name="essay_ans_${q.idQuestions || qNum}" rows="5" placeholder="Nhập lời giải hoặc đáp án chi tiết tại đây..." style="width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); outline:none; font-size: 14px; resize: vertical; line-height: 1.5;"></textarea>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            container.innerHTML = htmlContent;
+        }
+    }
+
+    async function submitExam() {
+        clearInterval(examTimer);
+
+        const submissionData = {
+            examId: parseInt(examId),
+            studentProfileId: currentStudentProfileId ? parseInt(currentStudentProfileId) : null,
+            tabSwitchCount: tabSwitchCount,
+            submitTime: new Date().toISOString()
+        };
+
+        try {
+            const res = await fetch('/api/exams/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(submissionData)
+            });
+
+            if (res.ok) {
+                alert("Nộp bài thi thành công!");
+                window.location.replace(`/student-class-detail.html?id=${classId}`);
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                alert(errData.message || "Bạn đã nộp bài thi này rồi!");
+                window.location.replace(`/student-class-detail.html?id=${classId}`);
+            }
+        } catch (e) {
+            console.error(e);
+            window.location.replace(`/student-class-detail.html?id=${classId}`);
+        }
+    }
+</script>
+</body>
+</html>

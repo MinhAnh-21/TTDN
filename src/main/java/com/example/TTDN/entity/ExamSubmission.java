@@ -17,6 +17,9 @@ public class ExamSubmission {
     @Column(name = "id_exam_submissions")
     private Long idExamSubmissions;
 
+    @Column(name = "exams_id")
+    private Long examId; // Lưu trực tiếp ID bài thi
+
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
@@ -25,6 +28,9 @@ public class ExamSubmission {
 
     @Column(name = "tab_switch_count")
     private Integer tabSwitchCount;
+
+    @Column(name = "student_answers", columnDefinition = "TEXT")
+    private String studentAnswers;
 
     @Column(name = "score")
     private Double score;

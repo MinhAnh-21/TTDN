@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chấm bài thi & Giám sát gian lận - Giáo Viên</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.05);
+            --header-title: #333333;
+            --card-hover-border: #2196f3;
+            --icon-color: #2196f3;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --header-title: #ffffff;
+            --card-hover-border: #2563eb;
+            --icon-color: #3b82f6;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 22px 0;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10;
+        }
+        .sidebar-logo {
+            width: 52px; height: 52px; background: white; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center; color: #2196f3;
+            font-size: 24px; font-weight: bold; margin-bottom: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu { list-style: none; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 56px; height: 56px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 22px; border-radius: 16px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { color: #ffffff; background: rgba(255, 255, 255, 0.15); }
+
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 90px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 6px 14px; font-size: 13px; border-radius: 6px;
+            white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        /* Main Container */
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        /* Header */
+        .header {
+            height: 70px; background: var(--bg-header); display: flex; justify-content: space-between; align-items: center; padding: 0 35px; position: relative;
+        }
+        .header-title { font-size: 18px; font-weight: 600; color: var(--header-title); }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+
+        .notification-icon {
+            position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; transition: color 0.3s;
+        }
+        .notification-icon:hover { color: #3b82f6; }
+        .notification-badge {
+            position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+            font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: 600;
+        }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 5px 10px; border-radius: 8px; transition: background 0.2s; user-select: none;
+        }
+        .user-profile-wrapper:hover { background: rgba(255, 255, 255, 0.05); }
+        .avatar {
+            width: 40px; height: 40px; background: #3b82f6; color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px; background: #202a40; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #e2e8f0; font-size: 14px; text-decoration: none; transition: background 0.2s;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-item:hover i { color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+        .dropdown-item.logout i { color: #f87171; }
+
+        /* Content */
+        .content { padding: 25px 35px 35px 35px; max-width: 1280px; margin: 0 auto; width: 100%; }
+
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .btn-back {
+            background: rgba(33, 150, 243, 0.1); color: #2196f3; border: none; padding: 10px 18px; border-radius: 8px;
+            font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; text-decoration: none;
+        }
+        .btn-back:hover { background: rgba(33, 150, 243, 0.2); }
+
+        .grading-table-card {
+            background: var(--bg-card); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px; border: 1px solid var(--border-color); overflow-x: auto;
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); }
+        th { font-weight: 600; color: var(--text-sub); background: rgba(0,0,0,0.02); }
+        body.dark-mode th { background: rgba(255,255,255,0.02); }
+
+        .badge-cheat-safe { background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 5px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+        .badge-cheat-warning { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+
+        /* Ô nhập điểm và nút lưu */
+        .score-input-box {
+            width: 68px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border-color);
+            background: rgba(33, 150, 243, 0.08); color: #2196f3; font-weight: 700; font-size: 15px;
+            text-align: center; outline: none; transition: border-color 0.2s;
+        }
+        .score-input-box:focus { border-color: #2196f3; box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2); }
+        .btn-save-score {
+            background: #2196f3; color: white; border: none; padding: 6px 14px; border-radius: 8px;
+            font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;
+        }
+        .btn-save-score:hover { background: #1976d2; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li data-tooltip="Màn hình chính"><a href="/teacher-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Quản lý Bài tập"><a href="/teacher-add-assignment.html"><i class="fa-solid fa-file-lines"></i></a></li>
+        <li class="active" data-tooltip="Quản lý Đề thi"><a href="/teacher-exams.html"><i class="fa-solid fa-folder-open"></i></a></li>
+        <li data-tooltip="Quản lý Lớp học"><a href="/teacher-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Quản lý Học sinh"><a href="/teacher-students.html"><i class="fa-solid fa-users"></i></a></li>
+        <li data-tooltip="Ngân hàng câu hỏi"><a href="#"><i class="fa-solid fa-book"></i></a></li>
+        <li data-tooltip="Thông báo kết quả"><a href="#"><i class="fa-solid fa-chart-pie"></i></a></li>
+        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-graduation-cap"></i></a></li>
+        <li data-tooltip="Kho nội dung"><a href="#"><i class="fa-solid fa-box-archive"></i></a></li>
+    </ul>
+</div>
+
+<!-- Main Container -->
+<div class="main-container">
+    <div class="header">
+        <div class="header-title" id="headerExamTitle">Chấm bài thi trực tuyến</div>
+
+        <div class="header-right">
+            <div class="notification-icon" onclick="alert('Bạn có thông báo mới!')" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge">2</span>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">N</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Nguyễn Văn Minh</div>
+                    <div class="role">Giáo viên</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/teacher-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
+                    <a href="/student-dashboard.html" class="dropdown-item"><i class="fa-solid fa-right-left"></i> Vào màn học sinh</a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-moon" id="darkModeIcon"></i> <span id="darkModeText">Chế độ tối</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <div class="action-bar">
+            <div>
+                <h3 style="color: var(--text-main); font-size: 17px; font-weight: 600;" id="examMainTitle">Danh sách học sinh đã nộp bài</h3>
+                <span id="submissionCount" style="color: var(--text-sub); font-size: 13px;">Đang tải danh sách bài làm...</span>
+            </div>
+            <a href="/teacher-exams.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách</a>
+        </div>
+
+        <div class="grading-table-card">
+            <table>
+                <thead>
+                <tr>
+                    <th>Mã học sinh</th>
+                    <th>Họ và tên</th>
+                    <th>Email</th>
+                    <th>Thời gian nộp</th>
+                    <th style="text-align: center;">Cảnh báo gian lận (Chuyển tab)</th>
+                    <th style="text-align: center; width: 200px;">Điểm số</th>
+                </tr>
+                </thead>
+                <tbody id="submissionTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:35px; color: var(--text-sub);">Đang tải dữ liệu bài nộp...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('examId') || 1;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        let displayName = localStorage.getItem('fullName') || 'Nguyễn Văn Minh';
+        document.getElementById('userName').textContent = displayName;
+
+        const userAvatarEl = document.getElementById('userAvatar');
+        const savedAvatar = localStorage.getItem('userAvatarUrl');
+        if (savedAvatar) {
+            userAvatarEl.innerHTML = `<img src="${savedAvatar}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        } else {
+            userAvatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+        }
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'enabled') {
+            document.body.classList.add('dark-mode');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            document.body.classList.remove('dark-mode');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+
+        await loadExamInfo();
+        await loadSubmissions();
+    });
+
+    async function loadExamInfo() {
+        try {
+            const res = await fetch(`/api/exams/${examId}/detail`);
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('headerExamTitle').textContent = `Chấm bài thi: ${data.exam.examName}`;
+                document.getElementById('examMainTitle').textContent = `Danh sách bài nộp: ${data.exam.examName}`;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function formatScoreNumber(score) {
+        if (score === null || score === undefined) return '0';
+        return score % 1 === 0 ? score.toFixed(0) : score.toString();
+    }
+
+    async function loadSubmissions() {
+        const tbody = document.getElementById('submissionTableBody');
+        try {
+            const res = await fetch(`/api/exams/${examId}/submissions`);
+            if (res.ok) {
+                const list = await res.json();
+                document.getElementById('submissionCount').textContent = `Tổng cộng: ${list.length} bài nộp`;
+
+                if (list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:35px; color: var(--text-sub);">Chưa có học sinh nào nộp bài thi này.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                list.forEach(item => {
+                    const submitDate = item.submitTime ? new Date(item.submitTime).toLocaleString('vi-VN') : 'Không rõ';
+                    const tabViolations = item.tabSwitchCount || 0;
+
+                    let cheatBadge = tabViolations > 0
+                        ? `<span class="badge-cheat-warning"><i class="fa-solid fa-triangle-exclamation"></i> Chuyển tab ${tabViolations} lần</span>`
+                        : `<span class="badge-cheat-safe"><i class="fa-solid fa-shield-halved"></i> Trung thực</span>`;
+
+                    const formattedScore = formatScoreNumber(item.score);
+
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td><strong style="color: var(--text-main);">${item.studentCode || 'HS00' + item.studentProfileId}</strong></td>
+                            <td style="font-weight: 500; color: var(--text-main);">${item.fullName}</td>
+                            <td style="color: var(--text-sub);">${item.email || 'Chưa cập nhật'}</td>
+                            <td style="color: var(--text-sub);">${submitDate}</td>
+                            <td style="text-align: center;">${cheatBadge}</td>
+                            <td style="text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <input type="number" step="0.5" min="0" max="10" value="${formattedScore}" id="scoreInput_${item.submissionId}" class="score-input-box">
+                                    <button class="btn-save-score" onclick="saveUpdatedScore(${item.submissionId})" title="Lưu điểm">
+                                        <i class="fa-solid fa-floppy-disk"></i> Lưu
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:25px;">Lỗi khi tải danh sách bài làm!</td></tr>`;
+        }
+    }
+
+    // HÀM LƯU ĐIỂM SỐ DO GIÁO VIÊN CHỈNH SỬA
+    async function saveUpdatedScore(submissionId) {
+        const inputEl = document.getElementById(`scoreInput_${submissionId}`);
+        const newScore = parseFloat(inputEl.value);
+
+        if (isNaN(newScore) || newScore < 0 || newScore > 10) {
+            alert("Vui lòng nhập điểm hợp lệ từ 0 đến 10!");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/exams/submissions/${submissionId}/score`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ score: newScore })
+            });
+
+            if (res.ok) {
+                alert(`Đã lưu điểm thành công: ${formatScoreNumber(newScore)} điểm!`);
+                await loadSubmissions();
+            } else {
+                alert("Lưu điểm thất bại!");
+            }
+        } catch (e) {
+            console.error("Lỗi khi lưu điểm:", e);
+            alert("Lỗi kết nối khi lưu điểm!");
+        }
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
+    profileWrapper.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+    });
+
+    window.addEventListener('click', function() {
+        if (dropdownMenu.classList.contains('show')) {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+</body>
+</html>

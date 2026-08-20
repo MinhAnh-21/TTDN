@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ Quản trị - Admin</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #1e3c72, #2a5298);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.05);
+            --header-title: #333333;
+            --card-hover-border: #1e3c72;
+            --icon-color: #1e3c72;
+            --modal-bg: #ffffff;
+            --stat-card-bg: rgba(30, 60, 114, 0.05);
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --header-title: #ffffff;
+            --card-hover-border: #3b82f6;
+            --icon-color: #3b82f6;
+            --modal-bg: #202a40;
+            --stat-card-bg: rgba(255, 255, 255, 0.04);
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 22px 0;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10;
+        }
+        .sidebar-logo {
+            width: 52px; height: 52px; background: white; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center; color: #1e3c72;
+            font-size: 24px; font-weight: bold; margin-bottom: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu { list-style: none; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 56px; height: 56px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 22px; border-radius: 16px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { color: #ffffff; background: rgba(255, 255, 255, 0.15); }
+
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 90px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 6px 14px; font-size: 13px; border-radius: 6px;
+            white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .header {
+            height: 70px; background: var(--bg-header); display: flex; justify-content: space-between; align-items: center; padding: 0 35px; position: relative;
+        }
+        .header-title { font-size: 18px; font-weight: 600; color: var(--header-title); }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+
+        .notification-icon {
+            position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; transition: color 0.3s;
+        }
+        .notification-icon:hover { color: #3b82f6; }
+        .notification-badge {
+            position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+            font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: 600;
+        }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 5px 10px; border-radius: 8px; transition: background 0.2s; user-select: none;
+        }
+        .user-profile-wrapper:hover { background: rgba(255, 255, 255, 0.05); }
+        .avatar {
+            width: 40px; height: 40px; background: #1e3c72; color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px; background: #202a40; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #e2e8f0; font-size: 14px; text-decoration: none; transition: background 0.2s;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        .content { padding: 25px 35px 35px 35px; max-width: 1280px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+
+        /* Thẻ thống kê (Stats Grid) */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .stat-card {
+            background: var(--bg-card); padding: 20px 24px; border-radius: 16px; border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 18px;
+        }
+        .stat-icon {
+            width: 54px; height: 54px; border-radius: 14px; background: var(--stat-card-bg);
+            display: flex; justify-content: center; align-items: center; font-size: 24px; color: #3b82f6;
+        }
+        .stat-info .stat-value { font-size: 22px; font-weight: 700; color: var(--text-main); }
+        .stat-info .stat-label { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
+
+        /* Bảng quản lý */
+        .management-card {
+            background: var(--bg-card); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            padding: 20px; border: 1px solid var(--border-color); overflow-x: auto;
+        }
+        .card-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); }
+        th { font-weight: 600; color: var(--text-sub); background: rgba(0,0,0,0.02); }
+        body.dark-mode th { background: rgba(255,255,255,0.02); }
+
+        .badge-role { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; display: inline-block; }
+        .badge-admin { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .badge-teacher { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .badge-student { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+        .btn-action {
+            background: none; border: none; color: var(--text-sub); cursor: pointer; font-size: 16px; margin-right: 8px; transition: 0.2s;
+        }
+        .btn-action:hover { transform: scale(1.15); }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-shield-halved"></i></div>
+    <ul class="sidebar-menu">
+        <li class="active" data-tooltip="Tổng quan Admin"><a href="/admin-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Quản lý Người dùng"><a href="#"><i class="fa-solid fa-users-gear"></i></a></li>
+        <li data-tooltip="Quản lý Khóa học"><a href="#"><i class="fa-solid fa-graduation-cap"></i></a></li>
+        <li data-tooltip="Quản lý Lớp học"><a href="#"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Hệ thống & Cài đặt"><a href="#"><i class="fa-solid fa-gears"></i></a></li>
+        <li data-tooltip="Báo cáo thống kê"><a href="#"><i class="fa-solid fa-chart-line"></i></a></li>
+    </ul>
+</div>
+
+<!-- Main Container -->
+<div class="main-container">
+    <div class="header">
+        <div class="header-title">Trang chủ Quản trị hệ thống (Admin)</div>
+
+        <div class="header-right">
+            <div class="notification-icon" onclick="alert('Không có cảnh báo hệ thống mới!')" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge">1</span>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Quản trị viên</div>
+                    <div class="role">System Admin</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="#" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản Admin</a>
+                    <a href="/teacher-dashboard.html" class="dropdown-item"><i class="fa-solid fa-right-left"></i> Chuyển sang màn Giáo viên</a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-moon" id="darkModeIcon"></i> <span id="darkModeText">Chế độ tối</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Thẻ Thống kê -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="totalUsersCount">1,245</div>
+                    <div class="stat-label">Tổng số người dùng</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #10b981;"><i class="fa-solid fa-chalkboard-user"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="totalTeachersCount">48</div>
+                    <div class="stat-label">Giáo viên hoạt động</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #f59e0b;"><i class="fa-solid fa-folder-open"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="totalExamsCount">128</div>
+                    <div class="stat-label">Đề thi trực tuyến</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #ef4444;"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="totalClassesCount">32</div>
+                    <div class="stat-label">Lớp học quản lý</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng Quản lý Người dùng Gần đây -->
+        <div class="management-card">
+            <div class="card-header-flex">
+                <div class="card-title">Danh sách Tài khoản Hệ thống</div>
+                <button class="btn-primary" style="background: #1e3c72; padding: 8px 16px; border: none; color: white; border-radius: 6px; cursor: pointer;" onclick="alert('Tính năng thêm tài khoản nhanh')"><i class="fa-solid fa-user-plus"></i> Thêm tài khoản</button>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ và tên</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Email</th>
+                    <th>Vai trò (Role)</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="userTableBody">
+                <!-- Dữ liệu mẫu hoặc gọi API -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('DOMContentLoaded', async () => {
+        let displayName = localStorage.getItem('fullName') || 'Quản trị viên';
+        document.getElementById('userName').textContent = displayName;
+
+        const userAvatarEl = document.getElementById('userAvatar');
+        userAvatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'enabled') {
+            document.body.classList.add('dark-mode');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            document.body.classList.remove('dark-mode');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+
+        loadMockUsers();
+    });
+
+    function loadMockUsers() {
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = `
+            <tr>
+                <td>#01</td>
+                <td style="font-weight: 600;">Nguyễn Văn Minh</td>
+                <td>admin_minh</td>
+                <td>minh@gmail.com</td>
+                <td><span class="badge-role badge-admin">ADMIN</span></td>
+                <td>
+                    <button class="btn-action" title="Sửa"><i class="fa-solid fa-pen-to-square" style="color: #3b82f6;"></i></button>
+                    <button class="btn-action" title="Xóa"><i class="fa-solid fa-trash" style="color: #ef4444;"></i></button>
+                </td>
+            </tr>
+            <tr>
+                <td>#02</td>
+                <td style="font-weight: 600;">Nguyễn Văn Mạnh</td>
+                <td>teacher_manh</td>
+                <td>manh@gmail.com</td>
+                <td><span class="badge-role badge-teacher">TEACHER</span></td>
+                <td>
+                    <button class="btn-action" title="Sửa"><i class="fa-solid fa-pen-to-square" style="color: #3b82f6;"></i></button>
+                    <button class="btn-action" title="Xóa"><i class="fa-solid fa-trash" style="color: #ef4444;"></i></button>
+                </td>
+            </tr>
+            <tr>
+                <td>#03</td>
+                <td style="font-weight: 600;">Học sinh Test</td>
+                <td>student_test</td>
+                <td>student@gmail.com</td>
+                <td><span class="badge-role badge-student">STUDENT</span></td>
+                <td>
+                    <button class="btn-action" title="Sửa"><i class="fa-solid fa-pen-to-square" style="color: #3b82f6;"></i></button>
+                    <button class="btn-action" title="Xóa"><i class="fa-solid fa-trash" style="color: #ef4444;"></i></button>
+                </td>
+            </tr>
+        `;
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
+    profileWrapper.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+    });
+
+    window.addEventListener('click', function() {
+        if (dropdownMenu.classList.contains('show')) {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+</body>
+</html>

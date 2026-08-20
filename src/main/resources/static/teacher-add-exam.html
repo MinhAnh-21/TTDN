@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo đề thi trực tuyến mới - Giáo Viên</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #4facfe, #00c6ff);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.08);
+            --input-bg: #f0f3f6;
+            --btn-bg: #2196f3;
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --input-bg: #111726;
+            --btn-bg: #2563eb;
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 22px 0; z-index: 10;
+        }
+        .sidebar-logo {
+            width: 52px; height: 52px; background: white; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center; color: #2196f3;
+            font-size: 24px; font-weight: bold; margin-bottom: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu {
+            list-style: none; width: 100%; display: flex; flex-direction: column;
+            align-items: center; gap: 12px; flex: 1;
+        }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 56px; height: 56px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 22px; border-radius: 16px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            color: #ffffff; background: rgba(255, 255, 255, 0.15);
+        }
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 90px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 6px 14px; font-size: 13px;
+            border-radius: 6px; white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .header {
+            height: 70px; background: var(--bg-header); display: flex;
+            justify-content: space-between; align-items: center; padding: 0 35px;
+            position: relative; border-bottom: 1px solid var(--border-color);
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .btn-back-clean {
+            background: transparent; border: none; color: var(--text-main);
+            font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; text-decoration: none;
+        }
+        .btn-back-clean:hover { color: #3b82f6; }
+        .header-title-page { font-size: 16px; font-weight: 600; color: var(--text-sub); border-left: 2px solid var(--border-color); padding-left: 15px; }
+
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .notification-icon { position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+        .notification-badge {
+            position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+            font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: 600;
+        }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; padding: 5px 10px; border-radius: 8px; user-select: none;
+        }
+        .avatar {
+            width: 40px; height: 40px; background: #3b82f6; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px;
+            background: #202a40; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+            color: #e2e8f0; font-size: 14px; text-decoration: none;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        .content { padding: 30px 35px; max-width: 950px; margin: 0 auto; width: 100%; }
+        .form-card {
+            background: var(--bg-card); padding: 35px; border-radius: 14px;
+            border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .form-title { font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 12px 16px; background: var(--input-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; color: var(--text-main); outline: none; font-size: 14px;
+        }
+        .form-row { display: flex; gap: 20px; }
+        .form-row .form-group { flex: 1; }
+
+        .file-upload-box {
+            background: var(--input-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 8px; flex: 1;
+        }
+
+        .class-select-box {
+            border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg);
+            padding: 15px; margin-top: 5px;
+        }
+        .class-list-container {
+            display: flex; flex-direction: column; gap: 10px; max-height: 180px; overflow-y: auto; margin-top: 10px;
+        }
+        .class-item-checkbox {
+            display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-main); cursor: pointer;
+        }
+
+        .btn-primary-action {
+            background: var(--btn-bg); color: white; border: none; padding: 10px 18px;
+            border-radius: 8px; font-weight: 500; cursor: pointer; display: inline-flex;
+            align-items: center; gap: 8px; font-size: 14px; text-decoration: none; justify-content: center;
+        }
+        .btn-primary-action:hover { opacity: 0.9; }
+        .btn-cancel {
+            background: #475569; color: white; border: none; padding: 12px 25px;
+            border-radius: 8px; font-weight: 500; cursor: pointer; font-size: 15px; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; }
+
+        #toastNotification {
+            position: fixed; bottom: 30px; right: 30px; background: #10b981; color: white;
+            padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: none; z-index: 9999;
+            animation: slideIn 0.3s ease forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="toastNotification"><i class="fa-solid fa-circle-check"></i> Tạo đề thi trực tuyến thành công!</div>
+
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+    <ul class="sidebar-menu">
+        <li data-tooltip="Màn hình chính"><a href="/teacher-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Quản lý Bài tập"><a href="/teacher-add-assignment.html"><i class="fa-solid fa-file-lines"></i></a></li>
+        <li class="active" data-tooltip="Quản lý Đề thi"><a href="/teacher-exams.html"><i class="fa-solid fa-folder-open"></i></a></li>
+        <li data-tooltip="Quản lý Lớp học"><a href="/teacher-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Quản lý Học sinh"><a href="/teacher-students.html"><i class="fa-solid fa-users"></i></a></li>
+        <li data-tooltip="Ngân hàng câu hỏi"><a href="#"><i class="fa-solid fa-book"></i></a></li>
+        <li data-tooltip="Thông báo kết quả"><a href="#"><i class="fa-solid fa-chart-pie"></i></a></li>
+        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-graduation-cap"></i></a></li>
+        <li data-tooltip="Kho nội dung"><a href="#"><i class="fa-solid fa-box-archive"></i></a></li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <div class="header">
+        <div class="header-left">
+            <a href="/teacher-exams.html" class="btn-back-clean">
+                <i class="fa-solid fa-chevron-left"></i> Quay lại
+            </a>
+            <div class="header-title-page">Tạo đề thi trực tuyến mới</div>
+        </div>
+
+        <div class="header-right">
+            <div class="notification-icon" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge">2</span>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">N</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Nguyễn Văn Minh</div>
+                    <div class="role">Giáo viên</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/teacher-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
+                    <a href="/student-dashboard.html" class="dropdown-item"><i class="fa-solid fa-right-left"></i> Vào màn học sinh</a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="form-card">
+            <h2 class="form-title">TẠO ĐỀ THI TRỰC TUYẾN MỚI</h2>
+
+            <div class="form-group">
+                <label>Tên bài thi / Kỳ thi</label>
+                <input type="text" id="examName" placeholder="Nhập tên bài thi (Ví dụ: Kiểm tra 15 phút Toán)...">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Khối học</label>
+                    <select id="examGrade" onchange="filterClasses()">
+                        <option value="">---Chọn khối---</option>
+                        <option value="Lớp 1">Lớp 1</option>
+                        <option value="Lớp 2" selected>Lớp 2</option>
+                        <option value="Lớp 3">Lớp 3</option>
+                        <option value="Lớp 4">Lớp 4</option>
+                        <option value="Lớp 5">Lớp 5</option>
+                        <option value="Lớp 6">Lớp 6</option>
+                        <option value="Lớp 7">Lớp 7</option>
+                        <option value="Lớp 8">Lớp 8</option>
+                        <option value="Lớp 9">Lớp 9</option>
+                        <option value="Lớp 10">Lớp 10</option>
+                        <option value="Lớp 11">Lớp 11</option>
+                        <option value="Lớp 12">Lớp 12</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Môn học</label>
+                    <select id="examSubject" onchange="filterClasses()">
+                        <option value="">---Chọn môn---</option>
+                        <option value="Toán học" selected>Toán học</option>
+                        <option value="Tin học">Tin học</option>
+                        <option value="Ngữ văn">Ngữ văn</option>
+                        <option value="Tiếng Anh">Tiếng Anh</option>
+                        <option value="Vật lý">Vật lý</option>
+                        <option value="Hóa học">Hóa học</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Loại hình bài thi (Đầu điểm)</label>
+                    <select id="examType">
+                        <option value="15_MINUTES" selected>Thi 15 phút</option>
+                        <option value="MIDTERM">Thi Giữa kỳ</option>
+                        <option value="FINAL">Thi Cuối kỳ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Thời gian làm bài (phút) - Tối thiểu 15 phút</label>
+                    <input type="number" id="durationMinutes" value="15" min="15" oninput="updateEndTimeAuto()">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Hình thức làm bài</label>
+                    <select id="examFormat" onchange="updateQuestionLabel()">
+                        <option value="MULTIPLE_CHOICE" selected>Trắc nghiệm</option>
+                        <option value="ESSAY">Tự luận / Điền đáp án</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label id="totalQuestionsLabel">Tổng số câu hỏi trắc nghiệm</label>
+                    <input type="number" id="totalQuestions" value="4" min="1">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label>Thời gian bắt đầu & Thời gian kết thúc (Tự động tính)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="datetime-local" id="examTimeFrom" style="flex: 1;" onchange="updateEndTimeAuto()">
+                        <span style="color: var(--text-sub);">Đến</span>
+                        <input type="datetime-local" id="examTimeTo" style="flex: 1;" readonly style="background-color: var(--border-color); cursor: not-allowed;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Thêm file đề thi</label>
+                    <div class="file-upload-box">
+                        <label for="examFileInput" class="btn-primary-action" style="cursor: pointer;">
+                            <i class="fa-solid fa-plus"></i> Chọn file đề thi
+                        </label>
+                        <input type="file" id="examFileInput" style="display: none;" onchange="handleExamFileSelect(event)">
+                        <span id="examFileNameDisplay" style="font-size: 12px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Chưa chọn file (PDF, Word, Ảnh...)</span>
+                        <button type="button" id="removeExamFileBtn" onclick="removeExamFile()" style="display: none; background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; text-align: left;" title="Xóa file đề">
+                            <i class="fa-solid fa-trash-can"></i> Xóa file này
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Thêm file đáp án đề thi</label>
+                    <div class="file-upload-box">
+                        <label for="answerFileInput" class="btn-primary-action" style="background: #10b981; cursor: pointer;">
+                            <i class="fa-solid fa-file-circle-check"></i> Chọn file đáp án
+                        </label>
+                        <input type="file" id="answerFileInput" style="display: none;" onchange="handleAnswerFileSelect(event)">
+                        <span id="answerFileNameDisplay" style="font-size: 12px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Chưa chọn file (PDF, Word, Excel...)</span>
+                        <button type="button" id="removeAnswerFileBtn" onclick="removeAnswerFile()" style="display: none; background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; text-align: left;" title="Xóa file đáp án">
+                            <i class="fa-solid fa-trash-can"></i> Xóa file này
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nội dung ghi chú / Hướng dẫn làm bài</label>
+                <textarea id="examContent" rows="3" placeholder="Nhập ghi chú hoặc hướng dẫn làm bài thi tại đây..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Giao đề thi cho lớp</label>
+                <div class="class-select-box">
+                    <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 5px;">Chọn các lớp tham gia bài thi:</div>
+                    <div class="class-list-container" id="classListContainer"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0; font-size: 14px; color: var(--text-main);">
+                <span>Cho xem kết quả ngay sau khi nộp</span>
+                <div>
+                    <label style="margin-right: 20px;"><input type="radio" name="viewResult" value="Không" checked> Không</label>
+                    <label><input type="radio" name="viewResult" value="Có"> Có</label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="/teacher-exams.html" class="btn-cancel">Hủy</a>
+                <button type="button" class="btn-primary-action" id="btnSaveExam" onclick="saveExam()">Lưu & Tạo đề thi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allClasses = [];
+    let selectedExamFile = null;
+    let selectedAnswerFile = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        let displayName = localStorage.getItem('fullName') || 'Nguyễn Văn Minh';
+        document.getElementById('userName').textContent = displayName;
+
+        const avatarEl = document.getElementById('userAvatar');
+        const savedAvatar = localStorage.getItem('userAvatarUrl');
+        if (savedAvatar) {
+            avatarEl.innerHTML = `<img src="${savedAvatar}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        } else {
+            avatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+        }
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'disabled') {
+            document.body.classList.remove('dark-mode');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        } else {
+            document.body.classList.add('dark-mode');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        }
+
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('examTimeFrom').value = now.toISOString().slice(0, 16);
+        updateEndTimeAuto();
+
+        await fetchAllClasses();
+    });
+
+    function updateQuestionLabel() {
+        const format = document.getElementById('examFormat').value;
+        const label = document.getElementById('totalQuestionsLabel');
+        if (format === 'ESSAY') {
+            label.textContent = 'Tổng số câu hỏi tự luận';
+        } else {
+            label.textContent = 'Tổng số câu hỏi trắc nghiệm';
+        }
+    }
+
+    async function fetchAllClasses() {
+        try {
+            const res = await fetch('/api/classes');
+            if (res.ok) {
+                allClasses = await res.json();
+                filterClasses();
+            }
+        } catch (err) {
+            console.error("Lỗi tải danh sách lớp:", err);
+        }
+    }
+
+    function renderClassList(classesToRender) {
+        const container = document.getElementById('classListContainer');
+        container.innerHTML = '';
+
+        if (classesToRender.length === 0) {
+            container.innerHTML = `<span style="color: var(--text-sub); font-size: 13px;">Không tìm thấy lớp học nào phù hợp.</span>`;
+            return;
+        }
+
+        classesToRender.forEach(c => {
+            container.innerHTML += `
+                <label class="class-item-checkbox">
+                    <input type="checkbox" name="selectedClasses" value="${c.idClasses}" checked>
+                    <span>${c.className} (Năm học: ${c.schoolYear || '2025-2026'})</span>
+                </label>
+            `;
+        });
+    }
+
+    function filterClasses() {
+        const selectedGrade = document.getElementById('examGrade').value.trim();
+        const selectedSubject = document.getElementById('examSubject').value.trim().toLowerCase();
+
+        const filtered = allClasses.filter(c => {
+            const name = c.className.toLowerCase();
+
+            let matchGrade = true;
+            if (selectedGrade) {
+                const gradeNum = selectedGrade.replace('Lớp ', '');
+                const regex = new RegExp(`lớp\\s*${gradeNum}(\\D|$)`, 'i');
+                matchGrade = regex.test(name);
+            }
+
+            let matchSubject = true;
+            if (selectedSubject) {
+                const subKey = selectedSubject.replace(' học', '');
+                matchSubject = name.includes(subKey);
+            }
+
+            return matchGrade && matchSubject;
+        });
+
+        renderClassList(filtered.length > 0 ? filtered : allClasses);
+    }
+
+    const examTypeSelect = document.getElementById('examType');
+    const durationInput = document.getElementById('durationMinutes');
+
+    examTypeSelect.addEventListener('change', function() {
+        if (this.value === '15_MINUTES') {
+            durationInput.value = 15;
+        } else if (this.value === 'MIDTERM') {
+            durationInput.value = 45;
+        } else if (this.value === 'FINAL') {
+            durationInput.value = 60;
+        }
+        updateEndTimeAuto();
+    });
+
+    function updateEndTimeAuto() {
+        const timeFromVal = document.getElementById('examTimeFrom').value;
+        const duration = parseInt(durationInput.value) || 0;
+
+        if (timeFromVal) {
+            const startDate = new Date(timeFromVal);
+            startDate.setMinutes(startDate.getMinutes() + duration);
+            startDate.setMinutes(startDate.getMinutes() - startDate.getTimezoneOffset());
+            document.getElementById('examTimeTo').value = startDate.toISOString().slice(0, 16);
+        }
+    }
+
+    function handleExamFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            selectedExamFile = file;
+            document.getElementById('examFileNameDisplay').textContent = file.name;
+            document.getElementById('removeExamFileBtn').style.display = 'inline-block';
+        }
+    }
+
+    function removeExamFile() {
+        selectedExamFile = null;
+        document.getElementById('examFileInput').value = '';
+        document.getElementById('examFileNameDisplay').textContent = 'Chưa chọn file (PDF, Word, Ảnh...)';
+        document.getElementById('removeExamFileBtn').style.display = 'none';
+    }
+
+    function handleAnswerFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            selectedAnswerFile = file;
+            document.getElementById('answerFileNameDisplay').textContent = file.name;
+            document.getElementById('removeAnswerFileBtn').style.display = 'inline-block';
+        }
+    }
+
+    function removeAnswerFile() {
+        selectedAnswerFile = null;
+        document.getElementById('answerFileInput').value = '';
+        document.getElementById('answerFileNameDisplay').textContent = 'Chưa chọn file (PDF, Word, Excel...)';
+        document.getElementById('removeAnswerFileBtn').style.display = 'none';
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toastNotification');
+        toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 1500);
+    }
+
+    // GỬI TRỰC TIẾP CÁC TRƯỜNG DƯỚI DẠNG FORMDATA THUẦN TÚY (TRÁNH LỖI 415)
+    async function saveExam() {
+        const name = document.getElementById('examName').value.trim();
+        if (!name) {
+            alert('Vui lòng nhập tên bài thi!');
+            return;
+        }
+
+        const grade = document.getElementById('examGrade').value;
+        const subject = document.getElementById('examSubject').value;
+        if (!grade || !subject) {
+            alert('Vui lòng chọn đầy đủ Khối học và Môn học!');
+            return;
+        }
+
+        const duration = parseInt(durationInput.value);
+        if (isNaN(duration) || duration < 15) {
+            alert('Thời gian làm bài phải lớn hơn hoặc bằng 15 phút!');
+            durationInput.focus();
+            return;
+        }
+
+        const format = document.getElementById('examFormat').value;
+        const totalQ = parseInt(document.getElementById('totalQuestions').value) || 4;
+
+        const checkedClasses = Array.from(document.querySelectorAll('input[name="selectedClasses"]:checked')).map(cb => parseInt(cb.value));
+        if (checkedClasses.length === 0) {
+            alert('Vui lòng chọn ít nhất một lớp để giao đề thi!');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('examName', name);
+        formData.append('grade', grade);
+        formData.append('subject', subject);
+        formData.append('examType', document.getElementById('examType').value);
+        formData.append('durationMinutes', duration);
+        formData.append('examFormat', format);
+        formData.append('totalQuestions', totalQ);
+        formData.append('startTime', document.getElementById('examTimeFrom').value);
+        formData.append('endTime', document.getElementById('examTimeTo').value);
+        formData.append('note', document.getElementById('examContent').value || '');
+        formData.append('viewResult', document.querySelector('input[name="viewResult"]:checked').value);
+
+        checkedClasses.forEach(cId => {
+            formData.append('classes', cId);
+        });
+
+        if (selectedExamFile) {
+            formData.append('examFile', selectedExamFile);
+        }
+        if (selectedAnswerFile) {
+            formData.append('answerFile', selectedAnswerFile);
+        }
+
+        const btnSave = document.getElementById('btnSaveExam');
+        btnSave.disabled = true;
+        btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu & bóc tách...`;
+
+        try {
+            const response = await fetch('/api/exams', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                showToast('Tạo đề thi trực tuyến thành công!');
+                setTimeout(() => {
+                    window.location.href = '/teacher-exams.html';
+                }, 1200);
+            } else {
+                const errText = await response.text();
+                alert('Lỗi khi lưu đề thi: ' + errText);
+                btnSave.disabled = false;
+                btnSave.innerHTML = 'Lưu & Tạo đề thi';
+            }
+        } catch (err) {
+            console.error("Lỗi kết nối:", err);
+            alert('Không thể kết nối đến máy chủ Backend!');
+            btnSave.disabled = false;
+            btnSave.innerHTML = 'Lưu & Tạo đề thi';
+        }
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    profileWrapper.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+    window.addEventListener('click', () => { if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show'); });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+
+</body>
+</html>
