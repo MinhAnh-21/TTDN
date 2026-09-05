@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Làm bài tập - Học Sinh</title>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
@@ -102,21 +100,6 @@
         .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
         .user-info .role { font-size: 12px; color: var(--text-sub); }
 
-        .dropdown-menu-custom {
-            position: absolute; top: 65px; right: 0; width: 240px;
-            background: #202a40; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
-        }
-        .dropdown-menu-custom.show { display: block; }
-        .dropdown-item {
-            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
-            color: #e2e8f0; font-size: 14px; text-decoration: none;
-        }
-        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
-        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
-        .dropdown-item.logout { color: #f87171; }
-
         .content { padding: 30px; max-width: 1200px; margin: 0 auto; width: 100%; }
 
         .assignment-detail-card {
@@ -193,7 +176,7 @@
     <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
     <ul class="sidebar-menu">
         <li class="active" data-tooltip="Danh sách lớp"><a href="/student-dashboard.html"><i class="fa-solid fa-layer-group"></i></a></li>
-        <li data-tooltip="Khóa học"><a href="#"><i class="fa-solid fa-book-open"></i></a></li>
+        <li><a href="#"><i class="fa-solid fa-book-open"></i></a></li>
     </ul>
 </div>
 
@@ -207,26 +190,11 @@
         </div>
 
         <div class="header-right">
-            <div class="notification-icon" title="Thông báo">
-                <i class="fa-regular fa-bell"></i>
-            </div>
-
-            <div class="user-profile-wrapper" id="profileWrapper">
-                <div class="avatar" id="userAvatar">N</div>
+            <div class="user-profile-wrapper">
+                <div class="avatar" id="userAvatar">L</div>
                 <div class="user-info">
-                    <div class="name" id="userName">Nguyễn Thị Hoài</div>
+                    <div class="name" id="userName">Nguyễn Nhật Linh</div>
                     <div class="role">Học sinh</div>
-                </div>
-
-                <div class="dropdown-menu-custom" id="dropdownMenu">
-                    <a href="/student-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản</a>
-                    <!-- Nút chuyển đổi sang màn hình giáo viên (chỉ hiện khi là tài khoản giáo viên/admin) -->
-                    <a href="/teacher-dashboard.html" class="dropdown-item" id="btnTeacherScreen" style="display: none;">
-                        <i class="fa-solid fa-right-left"></i> Vào màn giáo viên
-                    </a>
-                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-sun" id="darkModeIcon"></i> <span id="darkModeText">Chế độ sáng</span></a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
                 </div>
             </div>
         </div>
@@ -245,6 +213,7 @@
             <div class="section-box">
                 <div class="section-title"><i class="fa-solid fa-file-lines" style="color: #3b82f6;"></i> Đề bài từ Giáo viên:</div>
                 <div id="teacherFileContainer" style="margin-top: 10px;"></div>
+                <div id="assignDescription" style="font-size: 14px; color: var(--text-main); margin-top: 10px; white-space: pre-line;"></div>
             </div>
 
             <!-- Học sinh tải Ảnh / File bài làm -->
@@ -272,8 +241,10 @@
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const classId = urlParams.get('classId');
-    const assignmentId = urlParams.get('assignmentId');
+    const classId = urlParams.get('classId') || urlParams.get('cid') || 5;
+
+    let rawParam = urlParams.get('assignmentId') || urlParams.get('id');
+    let assignmentId = (rawParam && rawParam !== 'undefined' && rawParam !== 'null') ? parseInt(rawParam) : 20;
 
     let selectedStudentFiles = [];
     let currentAssignment = null;
@@ -282,129 +253,93 @@
     let existingFileUrls = [];
 
     window.addEventListener('DOMContentLoaded', async () => {
-        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email') || 'hoaint@gmail.com';
+        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email') || 'linh';
         try {
             const userRes = await fetch(`/api/users/profile/${currentUsername}`);
             if (userRes.ok) {
                 const userData = await userRes.json();
                 currentUserId = userData.idUser;
 
-                // KIỂM TRA QUYỀN GIÁO VIÊN / ADMIN ĐỂ HIỆN NÚT CHUYỂN MÀN HÌNH
-                const userRole = (userData.role || localStorage.getItem('role') || '').toUpperCase();
-                if (userRole.includes('TEACHER') || userRole.includes('GIÁO VIÊN') || userRole.includes('ADMIN')) {
-                    const btnTeacher = document.getElementById('btnTeacherScreen');
-                    if (btnTeacher) btnTeacher.style.display = 'flex';
-                }
-
                 const stdRes = await fetch(`/api/classes/student-profile/${currentUserId}`);
                 if (stdRes.ok) {
                     const stdData = await stdRes.json();
-                    currentStudentProfileId = stdData.idStudentProfiles || stdData.id;
+                    currentStudentProfileId = stdData.id_student_profiles || stdData.idStudentProfiles || stdData.id;
                 }
             }
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) {}
 
-        if (!currentStudentProfileId) currentStudentProfileId = currentUserId || 4;
-
-        const darkModeStatus = localStorage.getItem('darkMode');
-        const icon = document.getElementById('darkModeIcon');
-        const text = document.getElementById('darkModeText');
-
-        if (darkModeStatus === 'disabled') {
-            document.body.classList.remove('dark-mode');
-            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
-            if (text) text.textContent = 'Chế độ tối';
-        } else {
-            document.body.classList.add('dark-mode');
-            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
-            if (text) text.textContent = 'Chế độ sáng';
-            localStorage.setItem('darkMode', 'enabled');
-        }
-
-        let displayName = localStorage.getItem('fullName') || 'Nguyễn Thị Hoài';
-        document.getElementById('userName').textContent = displayName;
-
-        const avatarEl = document.getElementById('userAvatar');
-        const savedAvatar = localStorage.getItem('userAvatarUrl');
-        if (savedAvatar) {
-            avatarEl.innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
-        } else {
-            avatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
-        }
+        if (!currentStudentProfileId) currentStudentProfileId = currentUserId || 5;
 
         if (classId) {
             document.getElementById('btnBackToClassDetail').href = `/student-class-detail.html?id=${classId}`;
         }
 
-        if (assignmentId) {
-            await loadAssignmentDetail();
-        }
+        await loadAssignmentDetail();
     });
 
     async function loadAssignmentDetail() {
         try {
-            if (classId) {
-                const res = await fetch(`/api/classes/${classId}/assignments`);
-                if (res.ok) {
-                    const list = await res.json();
-                    currentAssignment = list.find(a => (a.idAssignments || a.id) == assignmentId);
+            const res = await fetch(`/api/classes/${classId}/assignments`);
+            if (res.ok) {
+                const list = await res.json();
+                if (assignmentId) {
+                    currentAssignment = list.find(a => (a.idAssignments || a.id_assignments || a.idAssignment || a.id) == assignmentId);
+                }
+                if (!currentAssignment && list.length > 0) {
+                    currentAssignment = list[0];
+                    assignmentId = currentAssignment.idAssignments || currentAssignment.id_assignments || currentAssignment.id;
                 }
             }
 
             if (currentAssignment) {
-                document.getElementById('assignTitle').textContent = currentAssignment.title || "Bài tập không có tiêu đề";
+                document.getElementById('assignTitle').textContent = currentAssignment.title || "Bài tập";
                 document.getElementById('headerPageTitle').textContent = `Làm bài tập: ${currentAssignment.title || ''}`;
                 document.getElementById('assignDueDate').textContent = currentAssignment.dueDate ? currentAssignment.dueDate.replace('T', ' ') : 'Không giới hạn';
+                document.getElementById('assignDescription').textContent = currentAssignment.description || '';
 
-                await checkSubmissionStatus();
                 renderTeacherFileButton(currentAssignment);
+                await checkSubmissionStatus();
             }
         } catch (err) {
-            console.error("Lỗi tải chi tiết bài tập:", err);
+            console.error(err);
         }
     }
 
     async function checkSubmissionStatus() {
+        if (!assignmentId) return;
         try {
             const subRes = await fetch(`/api/submissions/check?assignmentId=${assignmentId}&userId=${currentStudentProfileId}`);
             if (subRes.ok) {
                 const sub = await subRes.json();
                 const statusEl = document.getElementById('assignStatus');
                 const scoreEl = document.getElementById('assignScore');
-                const actionContainer = document.getElementById('actionButtonContainer');
 
-                if (sub && (sub.status || sub.submittedFile || sub.fileUrl)) {
-                    if (sub.status === 'GRADED' || sub.grade != null || sub.score != null) {
+                if (sub && (sub.submitted_file || sub.submittedFile || sub.fileUrl || sub.file_url)) {
+                    if (sub.grade != null || sub.score != null) {
                         statusEl.textContent = 'Đã chấm điểm';
                         statusEl.style.color = '#3b82f6';
                         scoreEl.textContent = `${sub.grade || sub.score} / 10`;
-                        actionContainer.innerHTML = `<span style="color: #3b82f6; font-weight: 600;"><i class="fa-solid fa-lock"></i> Bài tập đã được chấm điểm, không thể nộp lại.</span>`;
                     } else {
                         statusEl.textContent = 'Đã nộp';
                         statusEl.style.color = '#10b981';
-                        scoreEl.textContent = '-';
                     }
 
-                    const rawUrls = sub.submittedFile || sub.fileUrl || "";
+                    const rawUrls = sub.submitted_file || sub.submittedFile || sub.fileUrl || sub.file_url || "";
                     if (rawUrls.trim() !== '') {
                         existingFileUrls = rawUrls.split(',').filter(u => u.trim() !== '');
                         renderPreview();
                     }
                 }
             }
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) {}
     }
 
     function renderTeacherFileButton(assign) {
         const teacherFileBox = document.getElementById('teacherFileContainer');
-        const fileUrl = assign.fileUrl;
+        const fileUrl = assign.fileUrl || assign.file_url;
 
         if (fileUrl && fileUrl.trim() !== '' && fileUrl.trim() !== 'null' && (fileUrl.startsWith('http://') || fileUrl.startsWith('https://'))) {
-            const fileName = fileUrl.split('/').pop();
+            const fileName = fileUrl.split('/').pop().split('?')[0];
             teacherFileBox.innerHTML = `
                 <a href="${fileUrl}" target="_blank" download class="teacher-file-link">
                     <i class="fa-solid fa-file-arrow-down"></i> Tải / Xem file đề bài từ Giáo viên (${fileName})
@@ -436,7 +371,7 @@
             grid.innerHTML += `
                 <div class="image-preview-item">
                     <img src="${url}" alt="Bài đã nộp">
-                    <button type="button" class="btn-delete-file" onclick="removeExistingFileAt(${index})" title="Xóa file này"><i class="fa-solid fa-xmark"></i></button>
+                    <button type="button" class="btn-delete-file" onclick="removeExistingFileAt(${index})"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `;
         });
@@ -447,20 +382,12 @@
                 reader.onload = (e) => {
                     grid.innerHTML += `
                         <div class="image-preview-item">
-                            <img src="${e.target.result}" alt="Ảnh mới chọn">
-                            <button type="button" class="btn-delete-file" onclick="removeNewFileAt(${index})" title="Xóa file này"><i class="fa-solid fa-xmark"></i></button>
+                            <img src="${e.target.result}" alt="Ảnh mới">
+                            <button type="button" class="btn-delete-file" onclick="removeNewFileAt(${index})"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     `;
                 };
                 reader.readAsDataURL(file);
-            } else {
-                grid.innerHTML += `
-                    <div class="image-preview-item" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--input-bg); font-size: 11px; padding: 10px; text-align: center; color: var(--text-main); position: relative;">
-                        <button type="button" class="btn-delete-file" onclick="removeNewFileAt(${index})" title="Xóa file này"><i class="fa-solid fa-xmark"></i></button>
-                        <i class="fa-solid fa-file" style="font-size: 24px; color: #3b82f6; margin-bottom: 5px;"></i>
-                        ${file.name}
-                    </div>
-                `;
             }
         });
     }
@@ -479,12 +406,12 @@
         const toast = document.getElementById('toastNotification');
         toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
         toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        setTimeout(() => { toast.style.display = 'none'; }, 1500);
     }
 
     async function submitHomework() {
         if (selectedStudentFiles.length === 0 && existingFileUrls.length === 0) {
-            alert('Vui lòng chọn ít nhất một file hoặc ảnh bài làm trước khi gửi!');
+            alert('Vui lòng chọn ít nhất một file hoặc ảnh bài làm!');
             return;
         }
 
@@ -532,51 +459,23 @@
             if (subRes.ok) {
                 showToast('Nộp bài thành công!');
                 selectedStudentFiles = [];
-                await checkSubmissionStatus();
-
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Gửi bài làm cho giáo viên`;
-                }
+                document.getElementById('assignStatus').innerHTML = `<span style="color: #10b981;">Đã nộp</span>`;
+                setTimeout(() => {
+                    window.location.href = `/student-class-detail.html?id=${classId}`;
+                }, 1200);
             } else {
-                alert('Lưu bài nộp thất bại!');
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Gửi bài làm cho giáo viên`;
-                }
+                const errText = await subRes.text();
+                alert('Lỗi khi nộp bài: ' + errText);
             }
         } catch (err) {
-            console.error(err);
-            showToast('Nộp bài thành công!');
+            alert('Lỗi kết nối khi nộp bài: ' + err.message);
+        } finally {
             if (btnSubmit) {
                 btnSubmit.disabled = false;
                 btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Gửi bài làm cho giáo viên`;
             }
         }
     }
-
-    const profileWrapper = document.getElementById('profileWrapper');
-    const dropdownMenu = document.getElementById('dropdownMenu');
-    profileWrapper.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
-    window.addEventListener('click', () => { if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show'); });
-
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    darkModeToggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        document.body.classList.toggle('dark-mode');
-        const icon = document.getElementById('darkModeIcon');
-        const text = document.getElementById('darkModeText');
-        if (document.body.classList.contains('dark-mode')) {
-            localStorage.setItem('darkMode', 'enabled');
-            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
-            if (text) text.textContent = 'Chế độ sáng';
-        } else {
-            localStorage.setItem('darkMode', 'disabled');
-            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
-            if (text) text.textContent = 'Chế độ tối';
-        }
-    });
 </script>
-
 </body>
 </html>

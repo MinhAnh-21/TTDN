@@ -8,9 +8,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/submissions")
@@ -22,6 +25,9 @@ public class SubmissionController {
 
     @Autowired
     private StudentProfileRepository studentProfileRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Getter
     @Setter
@@ -44,61 +50,58 @@ public class SubmissionController {
     @PostMapping("/submit")
     public ResponseEntity<?> submitAssignment(@RequestBody SubmitRequest request) {
         try {
-            Long targetStudentProfileId = request.getUserId();
-            StudentProfile profile = studentProfileRepository.findByUserId(request.getUserId()).orElse(null);
-            if (profile != null) {
-                targetStudentProfileId = profile.getIdStudentProfiles();
-            } else {
-                profile = new StudentProfile();
-                profile.setUserId(request.getUserId());
-                profile.setStudentCode("HS" + String.format("%03d", request.getUserId()));
-                profile.setCreatedAt(LocalDateTime.now());
-                profile = studentProfileRepository.save(profile);
-                targetStudentProfileId = profile.getIdStudentProfiles();
+            Long assignmentId = request.getAssignmentId();
+            Long rawUserId = request.getUserId();
+            String fileUrl = request.getFileUrl();
+
+            if (assignmentId == null || assignmentId <= 0) {
+                return ResponseEntity.badRequest().body("Mã bài tập không hợp lệ!");
             }
 
-            AssignmentSubmission submission = submissionRepository
-                    .findSubmissionByCustom(request.getAssignmentId(), targetStudentProfileId)
-                    .orElse(new AssignmentSubmission());
-
+            // Tìm đúng id_student_profiles từ bảng student_profiles
+            Long targetStudentProfileId = rawUserId;
             try {
-                submission.getClass().getMethod("setAssignmentsIdAssignments", Long.class).invoke(submission, request.getAssignmentId());
-            } catch (Exception e1) {
-                try {
-                    submission.getClass().getMethod("setAssignmentId", Long.class).invoke(submission, request.getAssignmentId());
-                } catch (Exception e2) {}
-            }
+                List<Long> pList = jdbcTemplate.queryForList(
+                        "SELECT id_student_profiles FROM student_profiles WHERE users_id_user = ? OR Users_id_user = ? OR id_student_profiles = ?",
+                        Long.class, rawUserId, rawUserId, rawUserId
+                );
+                if (!pList.isEmpty()) {
+                    targetStudentProfileId = pList.get(0);
+                }
+            } catch (Exception ignored) {}
 
+            // Xóa bài nộp cũ nếu có trước khi thêm mới
             try {
-                submission.getClass().getMethod("setStudentProfilesIdStudentProfiles", Long.class).invoke(submission, targetStudentProfileId);
-            } catch (Exception e1) {
-                try {
-                    submission.getClass().getMethod("setStudentProfileId", Long.class).invoke(submission, targetStudentProfileId);
-                } catch (Exception e2) {}
-            }
+                jdbcTemplate.update(
+                        "DELETE FROM assignment_submissions WHERE assignments_id_assignments = ? AND student_profiles_id_student_profiles = ?",
+                        assignmentId, targetStudentProfileId
+                );
+            } catch (Exception ignored) {}
 
-            try {
-                submission.getClass().getMethod("setSubmittedFile", String.class).invoke(submission, request.getFileUrl());
-            } catch (Exception e1) {
-                try {
-                    submission.getClass().getMethod("setFileUrl", String.class).invoke(submission, request.getFileUrl());
-                } catch (Exception e2) {}
-            }
+            // Thêm mới bài nộp khớp chính xác theo các cột trong CSDL
+            jdbcTemplate.update(
+                    "INSERT INTO assignment_submissions (submitted_file, submitted_at, assignments_id_assignments, student_profiles_id_student_profiles) VALUES (?, NOW(), ?, ?)",
+                    fileUrl, assignmentId, targetStudentProfileId
+            );
 
-            try {
-                submission.getClass().getMethod("setSubmittedAt", LocalDateTime.class).invoke(submission, LocalDateTime.now());
-            } catch (Exception e) {}
-
-            try {
-                String st = request.getStatus() != null ? request.getStatus() : "SUBMITTED";
-                submission.getClass().getMethod("setStatus", String.class).invoke(submission, st);
-            } catch (Exception e) {}
-
-            AssignmentSubmission saved = submissionRepository.save(submission);
-            return ResponseEntity.ok(saved);
+            return ResponseEntity.ok("Nộp bài thành công!");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Lỗi lưu bài nộp: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/assignment/{assignmentId}")
+    public ResponseEntity<?> getSubmissionsByAssignment(@PathVariable Long assignmentId) {
+        try {
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                    "SELECT * FROM assignment_submissions WHERE assignments_id_assignments = ?",
+                    assignmentId
+            );
+            return ResponseEntity.ok(rows);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of());
         }
     }
 
@@ -111,56 +114,20 @@ public class SubmissionController {
             }
 
             Long targetProfileId = request.getUserId();
-            StudentProfile profile = studentProfileRepository.findByUserId(request.getUserId()).orElse(null);
-            if (profile != null) {
-                targetProfileId = profile.getIdStudentProfiles();
-            }
-
-            AssignmentSubmission submission = submissionRepository
-                    .findSubmissionByCustom(request.getAssignmentId(), targetProfileId)
-                    .orElse(null);
-
-            if (submission == null) {
-                submission = submissionRepository
-                        .findSubmissionByCustom(request.getAssignmentId(), request.getUserId())
-                        .orElse(new AssignmentSubmission());
-            }
-
             try {
-                submission.getClass().getMethod("setAssignmentsIdAssignments", Long.class).invoke(submission, request.getAssignmentId());
-            } catch (Exception e1) {
-                try {
-                    submission.getClass().getMethod("setAssignmentId", Long.class).invoke(submission, request.getAssignmentId());
-                } catch (Exception e2) {}
-            }
+                List<Long> pList = jdbcTemplate.queryForList(
+                        "SELECT id_student_profiles FROM student_profiles WHERE users_id_user = ? OR Users_id_user = ? OR id_student_profiles = ?",
+                        Long.class, request.getUserId(), request.getUserId(), request.getUserId()
+                );
+                if (!pList.isEmpty()) targetProfileId = pList.get(0);
+            } catch (Exception ignored) {}
 
-            try {
-                submission.getClass().getMethod("setStudentProfilesIdStudentProfiles", Long.class).invoke(submission, targetProfileId);
-            } catch (Exception e1) {
-                try {
-                    submission.getClass().getMethod("setStudentProfileId", Long.class).invoke(submission, targetProfileId);
-                } catch (Exception e2) {}
-            }
+            jdbcTemplate.update(
+                    "UPDATE assignment_submissions SET grade = ?, graded_at = NOW() WHERE assignments_id_assignments = ? AND (student_profiles_id_student_profiles = ? OR student_profiles_id_student_profiles = ?)",
+                    finalScore, request.getAssignmentId(), targetProfileId, request.getUserId()
+            );
 
-            // GÁN TRỰC TIẾP ĐIỂM VÀO CẢ 2 HÀM SETTER ĐỂ ĐẢM BẢO LƯU VÀO CSDL
-            try {
-                submission.getClass().getMethod("setGrade", Double.class).invoke(submission, finalScore);
-            } catch (Exception e1) {}
-
-            try {
-                submission.getClass().getMethod("setScore", Double.class).invoke(submission, finalScore);
-            } catch (Exception e1) {}
-
-            try {
-                submission.getClass().getMethod("setStatus", String.class).invoke(submission, "GRADED");
-            } catch (Exception e) {}
-
-            try {
-                submission.getClass().getMethod("setGradedAt", LocalDateTime.class).invoke(submission, LocalDateTime.now());
-            } catch (Exception e) {}
-
-            AssignmentSubmission saved = submissionRepository.save(submission);
-            return ResponseEntity.ok(saved);
+            return ResponseEntity.ok("Lưu điểm thành công!");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Lỗi lưu điểm: " + e.getMessage());
@@ -173,27 +140,26 @@ public class SubmissionController {
             @RequestParam Long userId) {
         try {
             Long profileId = userId;
-            StudentProfile profile = studentProfileRepository.findByUserId(userId).orElse(null);
-            if (profile != null) {
-                profileId = profile.getIdStudentProfiles();
-            }
+            try {
+                List<Long> pList = jdbcTemplate.queryForList(
+                        "SELECT id_student_profiles FROM student_profiles WHERE users_id_user = ? OR Users_id_user = ? OR id_student_profiles = ?",
+                        Long.class, userId, userId, userId
+                );
+                if (!pList.isEmpty()) profileId = pList.get(0);
+            } catch (Exception ignored) {}
 
-            AssignmentSubmission submission = submissionRepository
-                    .findSubmissionByCustom(assignmentId, profileId)
-                    .orElse(null);
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                    "SELECT * FROM assignment_submissions WHERE assignments_id_assignments = ? AND (student_profiles_id_student_profiles = ? OR student_profiles_id_student_profiles = ?) ORDER BY id_assignment_submissions DESC LIMIT 1",
+                    assignmentId, profileId, userId
+            );
 
-            if (submission == null && !profileId.equals(userId)) {
-                submission = submissionRepository
-                        .findSubmissionByCustom(assignmentId, userId)
-                        .orElse(null);
+            if (!rows.isEmpty()) {
+                return ResponseEntity.ok(rows.get(0));
             }
-
-            if (submission != null) {
-                return ResponseEntity.ok(submission);
-            }
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok(Map.of());
         } catch (Exception e) {
-            return ResponseEntity.ok().body(null);
+            e.printStackTrace();
+            return ResponseEntity.ok(Map.of());
         }
     }
 }

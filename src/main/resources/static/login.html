@@ -102,10 +102,12 @@
                 localStorage.setItem('username', data.username || username);
                 const userRole = (data.role || '').toUpperCase();
                 localStorage.setItem('role', userRole || 'STUDENT');
-                if (data.token) localStorage.setItem('token', data.token);
+                if (data.accessToken) localStorage.setItem('token', data.accessToken);
 
-                // Điều hướng chính xác theo Vai trò
-                if (userRole.includes('TEACHER') || userRole.includes('ADMIN')) {
+                // Điều hướng chính xác theo Vai trò (Thêm điều kiện cho ADMIN)
+                if (userRole.includes('ADMIN')) {
+                    window.location.href = "/admin-dashboard.html";
+                } else if (userRole.includes('TEACHER')) {
                     window.location.href = "/teacher-dashboard.html";
                 } else {
                     window.location.href = "/student-dashboard.html";

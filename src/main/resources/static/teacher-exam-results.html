@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giao diện chấm bài chi tiết - Giáo Viên</title>
+    <title>Kết quả thi chi tiết - Giáo Viên</title>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
@@ -72,12 +74,14 @@
             justify-content: space-between; align-items: center; padding: 0 35px;
             position: relative; border-bottom: 1px solid var(--border-color);
         }
+        .header-left { display: flex; align-items: center; gap: 15px; }
         .btn-back-clean {
             background: transparent; border: none; color: var(--text-main);
             font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex;
             align-items: center; gap: 8px; text-decoration: none;
         }
         .btn-back-clean:hover { color: #3b82f6; }
+        .header-title-page { font-size: 16px; font-weight: 600; color: var(--text-sub); border-left: 2px solid var(--border-color); padding-left: 15px; }
 
         .header-right { display: flex; align-items: center; gap: 20px; }
         .notification-icon { position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; }
@@ -116,23 +120,14 @@
 
         .content { padding: 30px 35px; max-width: 1300px; margin: 0 auto; width: 100%; }
 
-        .grading-header-card {
+        .card-header-info {
             background: var(--bg-card); padding: 25px; border-radius: 14px;
             border: 1px solid var(--border-color); margin-bottom: 25px;
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
-        .grading-title h2 { font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
-        .grading-title p { font-size: 13px; color: var(--text-sub); }
-
-        .toolbar-actions { display: flex; gap: 12px; align-items: center; }
-        .search-box { position: relative; width: 280px; }
-        .search-box input {
-            width: 100%; padding: 9px 35px 9px 14px; background: var(--input-bg);
-            border: 1px solid var(--border-color); border-radius: 8px; outline: none;
-            color: var(--text-main); font-size: 13px;
-        }
-        .search-box i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-sub); }
+        .card-header-info h2 { font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
+        .card-header-info p { font-size: 13px; color: var(--text-sub); }
 
         .btn-save-all {
             background: #10b981; color: white; border: none; padding: 10px 20px;
@@ -160,6 +155,40 @@
         }
         .score-input:focus { border-color: #3b82f6; }
 
+        .btn-view-answers {
+            background: #2563eb; color: white; border: none; padding: 7px 15px;
+            border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-view-answers:hover { opacity: 0.9; }
+
+        /* Modal Chi tiết bài làm */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: var(--bg-card); padding: 30px; border-radius: 16px; width: 750px; max-height: 85vh;
+            border: 1px solid var(--border-color); overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .modal-header h3 { font-size: 18px; color: var(--text-main); }
+        .btn-close-modal { background: transparent; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+
+        .question-item-card {
+            background: var(--input-bg); border-radius: 10px; padding: 18px; margin-bottom: 15px; border: 1px solid var(--border-color);
+        }
+        .question-title { font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 10px; }
+        .option-list { display: flex; flex-direction: column; gap: 8px; }
+        .option-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 14px; border-radius: 8px; font-size: 13.5px;
+            border: 1px solid var(--border-color); color: var(--text-main); background: var(--bg-card);
+        }
+        .option-correct { background: rgba(16, 185, 129, 0.15) !important; border-color: #10b981 !important; color: #10b981 !important; font-weight: 600; }
+        .option-wrong { background: rgba(239, 68, 68, 0.15) !important; border-color: #ef4444 !important; color: #ef4444 !important; font-weight: 600; }
+
+        .badge-correct { background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 6px; }
+        .badge-selected { background: #2563eb; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 6px; }
+        .badge-wrong { background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 6px; }
+
         #toastNotification {
             position: fixed; bottom: 30px; right: 30px; background: #10b981; color: white;
             padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500;
@@ -181,7 +210,7 @@
     <ul class="sidebar-menu">
         <li data-tooltip="Màn hình chính"><a href="/teacher-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
         <li data-tooltip="Quản lý Bài tập"><a href="/teacher-add-assignment.html"><i class="fa-solid fa-file-lines"></i></a></li>
-        <li data-tooltip="Quản lý Đề thi"><a href="#"><i class="fa-solid fa-folder-open"></i></a></li>
+        <li data-tooltip="Quản lý Đề thi"><a href="/teacher-exams.html"><i class="fa-solid fa-folder-open"></i></a></li>
         <li class="active" data-tooltip="Quản lý Lớp học"><a href="/teacher-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
         <li data-tooltip="Quản lý Học sinh"><a href="/teacher-students.html"><i class="fa-solid fa-users"></i></a></li>
         <li data-tooltip="Ngân hàng câu hỏi"><a href="#"><i class="fa-solid fa-book"></i></a></li>
@@ -193,9 +222,12 @@
 
 <div class="main-container">
     <div class="header">
-        <a href="#" id="btnBackToClass" class="btn-back-clean">
-            <i class="fa-solid fa-chevron-left"></i> Quay lại chi tiết lớp học
-        </a>
+        <div class="header-left">
+            <a href="#" id="btnBackToClass" class="btn-back-clean">
+                <i class="fa-solid fa-chevron-left"></i> Quay lại chi tiết lớp học
+            </a>
+            <div class="header-title-page" id="headerPageTitle">Kết quả thi chi tiết: Đang tải...</div>
+        </div>
 
         <div class="header-right">
             <div class="notification-icon" title="Thông báo">
@@ -222,16 +254,12 @@
     </div>
 
     <div class="content">
-        <div class="grading-header-card">
-            <div class="grading-title">
-                <h2 id="assignmentTitleDisplay">Đang tải tên bài tập...</h2>
-                <p id="assignmentMetaDisplay">Lớp: Đang tải... | Tổng số học sinh: 0</p>
+        <div class="card-header-info">
+            <div>
+                <h2 id="examNameTitle">Kết quả thi: Đang tải...</h2>
+                <p id="examMetaDisplay">Lớp: Đang tải... | Tổng số học sinh: 0</p>
             </div>
-            <div class="toolbar-actions">
-                <div class="search-box">
-                    <input type="text" id="searchStudentInput" placeholder="Tìm kiếm tên học sinh..." oninput="filterGradingTable()">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </div>
+            <div>
                 <button class="btn-save-all" onclick="saveAllScores()">
                     <i class="fa-solid fa-floppy-disk"></i> Lưu tất cả điểm
                 </button>
@@ -243,26 +271,38 @@
                 <thead>
                 <tr>
                     <th>Họ và tên học sinh</th>
-                    <th>Trạng thái nộp bài</th>
+                    <th>Email</th>
+                    <th>Trạng thái thi</th>
                     <th>Thời gian nộp</th>
-                    <th>File bài làm của học sinh</th>
-                    <th style="text-align: center;">Điểm số (Thang 10)</th>
+                    <th style="text-align: center;">Điểm số</th>
+                    <th style="text-align: center;">Chi tiết bài làm</th>
                 </tr>
                 </thead>
-                <tbody id="gradingTableBody">
-                <tr><td colspan="5" style="text-align: center; padding: 40px;">Đang tải danh sách bài làm từ CSDL...</td></tr>
+                <tbody id="examResultTableBody">
+                <tr><td colspan="6" style="text-align: center; padding: 30px;">Đang tải danh sách kết quả...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
+<!-- Modal Chi tiết câu trả lời -->
+<div class="modal" id="answerDetailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalStudentTitle">Chi tiết bài làm</h3>
+            <button class="btn-close-modal" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="questionsDetailContainer"></div>
+    </div>
+</div>
+
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const classId = urlParams.get('classId') || 5;
-    const assignmentId = urlParams.get('assignmentId') || 20;
+    const examId = urlParams.get('examId') || 29;
 
-    let gradingDataList = [];
+    let resultsDataList = [];
 
     window.addEventListener('DOMContentLoaded', async () => {
         let displayName = localStorage.getItem('fullName') || 'Nguyễn Văn Minh';
@@ -282,19 +322,17 @@
 
         if (darkModeStatus === 'disabled') {
             document.body.classList.remove('dark-mode');
-            icon.classList.replace('fa-sun', 'fa-moon');
-            text.textContent = 'Chế độ tối';
+            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+            if (text) text.textContent = 'Chế độ tối';
         } else {
             document.body.classList.add('dark-mode');
-            icon.classList.replace('fa-moon', 'fa-sun');
-            text.textContent = 'Chế độ sáng';
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            if (text) text.textContent = 'Chế độ sáng';
             localStorage.setItem('darkMode', 'enabled');
         }
 
-        if (classId) {
-            document.getElementById('btnBackToClass').href = `/class-detail.html?id=${classId}#assignments`;
-            await loadRealGradingDataFromDb();
-        }
+        document.getElementById('btnBackToClass').href = `/class-detail.html?id=${classId}#exams`;
+        await loadExamResults();
     });
 
     function showToast(message) {
@@ -304,202 +342,197 @@
         setTimeout(() => { toast.style.display = 'none'; }, 2000);
     }
 
-    async function loadRealGradingDataFromDb() {
+    async function loadExamResults() {
         try {
             const classRes = await fetch(`/api/classes/${classId}`);
-            let className = "Lớp học";
+            let className = "Toán Lớp 4";
             if (classRes.ok) {
-                const classData = await classRes.json();
-                className = classData.className;
+                const cData = await classRes.json();
+                className = cData.className;
+                document.getElementById('headerPageTitle').textContent = `Kết quả thi chi tiết: ${className}`;
             }
 
-            const assignRes = await fetch(`/api/classes/${classId}/assignments`);
-            let assignTitle = "Bài tập";
-            if (assignRes.ok) {
-                const assignments = await assignRes.json();
-                const currentAssign = assignments.find(a => (a.idAssignments || a.id_assignments || a.idAssignment || a.id) == assignmentId);
-                if (currentAssign) {
-                    assignTitle = currentAssign.title;
-                }
+            const examRes = await fetch(`/api/exams`);
+            if (examRes.ok) {
+                const exams = await examRes.json();
+                const cur = exams.find(e => (e.idExams || e.id_exams || e.id) == examId);
+                if (cur) document.getElementById('examNameTitle').textContent = `Kết quả thi: ${cur.examName || cur.exam_name}`;
             }
 
-            document.getElementById('assignmentTitleDisplay').textContent = `Chấm bài: ${assignTitle}`;
-
-            const studentRes = await fetch(`/api/classes/${classId}/students`);
-            const subListRes = await fetch(`/api/submissions/assignment/${assignmentId}`);
-            let allSubmissions = [];
-            if (subListRes.ok) {
-                allSubmissions = await subListRes.json();
-            }
-
-            if (studentRes.ok) {
-                const students = await studentRes.json();
-                gradingDataList = [];
-
-                for (let s of students) {
-                    const userId = s.idUser || s.id_user || s.id;
-                    let targetProfileId = s.idStudentProfiles || s.id_student_profiles || userId;
-
-                    try {
-                        const stdRes = await fetch(`/api/classes/student-profile/${userId}`);
-                        if (stdRes.ok) {
-                            const stdData = await stdRes.json();
-                            targetProfileId = stdData.id_student_profiles || stdData.idStudentProfiles || stdData.id || targetProfileId;
-                        }
-                    } catch (e) {}
-
-                    // Tìm bài nộp khớp với học sinh trong danh sách theo đúng cột trong CSDL
-                    let submission = allSubmissions.find(sub => {
-                        const subProfileId = sub.student_profiles_id_student_profiles || sub.studentProfilesIdStudentProfiles;
-                        return subProfileId == targetProfileId || subProfileId == userId;
-                    });
-
-                    // Fallback gọi kiểm tra riêng nếu chưa có
-                    if (!submission) {
-                        try {
-                            const subCheckRes = await fetch(`/api/submissions/check?assignmentId=${assignmentId}&userId=${targetProfileId}`);
-                            if (subCheckRes.ok) {
-                                const checkData = await subCheckRes.json();
-                                if (checkData && (checkData.submitted_file || checkData.submittedFile)) {
-                                    submission = checkData;
-                                }
-                            }
-                        } catch (e) {}
-                    }
-
-                    gradingDataList.push({
-                        studentId: userId,
-                        profileId: targetProfileId,
-                        fullName: s.fullName || s.username || 'Học sinh',
-                        submission: submission
-                    });
-                }
-
-                document.getElementById('assignmentMetaDisplay').textContent = `Lớp: ${className} | Tổng số học sinh: ${students.length}`;
-                renderGradingTable(gradingDataList);
+            const res = await fetch(`/api/exam-results/${examId}/class/${classId}`);
+            if (res.ok) {
+                resultsDataList = await res.json();
+                document.getElementById('examMetaDisplay').textContent = `Lớp: ${className} | Tổng số học sinh: ${resultsDataList.length}`;
+                renderTable(resultsDataList);
             }
         } catch (err) {
-            console.error("Lỗi tải dữ liệu chấm bài thực tế:", err);
+            console.error(err);
         }
     }
 
-    function renderGradingTable(list) {
-        const tbody = document.getElementById('gradingTableBody');
+    function renderTable(list) {
+        const tbody = document.getElementById('examResultTableBody');
         tbody.innerHTML = '';
 
         if (!list || list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-sub); padding: 30px;">Không có học sinh nào trong lớp này.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 25px;">Chưa có học sinh nào trong lớp.</td></tr>`;
             return;
         }
 
-        list.forEach(item => {
-            const sub = item.submission;
-            const submittedFile = sub ? (sub.submitted_file || sub.submittedFile) : null;
-            const isSubmitted = !!(submittedFile && submittedFile.trim() !== '' && submittedFile !== 'null');
+        list.forEach(st => {
+            const hasSub = (st.status === 'SUBMITTED' || st.submissionId != null);
+            const statusBadge = hasSub
+                ? `<span class="badge-submitted">Đã hoàn thành</span>`
+                : `<span class="badge-unsubmitted">Chưa thi</span>`;
 
-            const statusBadge = isSubmitted
-                ? `<span class="badge-submitted">Đã nộp</span>`
-                : `<span class="badge-unsubmitted">Chưa nộp</span>`;
+            const submitTime = hasSub && st.submittedAt ? st.submittedAt.replace('T', ' ') : '-';
+            const currentScore = (hasSub && st.score != null) ? st.score : '';
 
-            const submitTime = (sub && sub.submitted_at) ? sub.submitted_at.replace('T', ' ') : ((sub && sub.submittedAt) ? sub.submittedAt.replace('T', ' ') : (isSubmitted ? 'Đã nộp' : '-'));
+            const profileId = st.id_student_profiles || st.idStudentProfiles || st.id_user;
+            const scoreInputHtml = `<input type="number" min="0" max="10" step="0.1" value="${currentScore}" class="score-input student-exam-score" data-sub-id="${st.submissionId || ''}" data-profile-id="${profileId}">`;
 
-            let fileLink = `<span style="color: var(--text-sub);">Không có</span>`;
-            if (isSubmitted && submittedFile) {
-                const urlList = submittedFile.split(',').filter(u => u.trim() !== '');
-                fileLink = urlList.map((u, i) => `<a href="${u}" target="_blank" download style="color: #3b82f6; font-weight: 500; text-decoration: underline; margin-right: 8px;"><i class="fa-solid fa-file-arrow-down"></i> Xem bài ${i + 1}</a>`).join('');
-            }
-
-            const currentScore = (sub && sub.grade != null) ? sub.grade : '';
+            const actionBtn = hasSub
+                ? `<button class="btn-view-answers" onclick="viewStudentAnswers(${st.submissionId}, '${st.full_name}')"><i class="fa-solid fa-list-check"></i> Xem đáp án</button>`
+                : `<span style="color: var(--text-sub); font-size: 13px;">Chưa nộp bài</span>`;
 
             tbody.innerHTML += `
-                <tr data-userid="${item.studentId}">
-                    <td style="font-weight: 500; color: var(--text-main);">${item.fullName}</td>
+                <tr>
+                    <td style="font-weight: 500; color: var(--text-main);">${st.full_name}</td>
+                    <td>${st.email || 'Chưa cập nhật'}</td>
                     <td>${statusBadge}</td>
                     <td>${submitTime}</td>
-                    <td>${fileLink}</td>
-                    <td style="text-align: center;">
-                        <input type="number" min="0" max="10" step="0.1" value="${currentScore}" placeholder="" class="score-input student-score-input" data-userid="${item.profileId}">
-                    </td>
+                    <td style="text-align: center;">${scoreInputHtml}</td>
+                    <td style="text-align: center;">${actionBtn}</td>
                 </tr>
             `;
         });
     }
 
-    function filterGradingTable() {
-        const keyword = document.getElementById('searchStudentInput').value.toLowerCase();
-        const filtered = gradingDataList.filter(item => {
-            return item.fullName.toLowerCase().includes(keyword);
-        });
-        renderGradingTable(filtered);
+    async function viewStudentAnswers(submissionId, studentName) {
+        document.getElementById('modalStudentTitle').textContent = `Chi tiết bài làm: ${studentName}`;
+        const container = document.getElementById('questionsDetailContainer');
+        container.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-sub);">Đang tải câu trả lời từ CSDL...</div>';
+        document.getElementById('answerDetailModal').classList.add('show');
+
+        try {
+            const res = await fetch(`/api/exam-results/submission/${submissionId}/answers`);
+            if (res.ok) {
+                const list = await res.json();
+                container.innerHTML = '';
+
+                if (list.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-sub);">Không có dữ liệu câu trả lời chi tiết.</div>';
+                    return;
+                }
+
+                list.forEach((q, idx) => {
+                    let optionsHtml = '';
+                    if (q.options && q.options.length > 0) {
+                        q.options.forEach((opt, oIdx) => {
+                            const optId = opt.id_question_options || opt.idQuestionOptions || opt.id;
+                            const optContent = opt.content || opt.optionContent || '';
+                            const isCorrect = (opt.is_correct == 1 || opt.is_correct === true || opt.isCorrect == 1 || opt.isCorrect === true);
+                            const isSelected = (optId == q.selected_option_id);
+
+                            let optClass = 'option-item';
+                            let labelExtra = '';
+
+                            if (isCorrect) {
+                                optClass += ' option-correct';
+                                labelExtra += ' <span class="badge-correct"><i class="fa-solid fa-check"></i> Đáp án đúng</span>';
+                            }
+                            if (isSelected) {
+                                if (isCorrect) {
+                                    labelExtra += ' <span class="badge-selected"><i class="fa-solid fa-user-check"></i> Học sinh chọn</span>';
+                                } else {
+                                    optClass += ' option-wrong';
+                                    labelExtra += ' <span class="badge-wrong"><i class="fa-solid fa-xmark"></i> Học sinh chọn</span>';
+                                }
+                            }
+
+                            optionsHtml += `
+                                <div class="${optClass}">
+                                    <span><strong>${String.fromCharCode(65 + oIdx)}.</strong> ${optContent}</span>
+                                    <div>${labelExtra}</div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        optionsHtml = '<div style="color: var(--text-sub); font-style: italic; padding: 6px 0;">Không có phương án trắc nghiệm.</div>';
+                    }
+
+                    container.innerHTML += `
+                        <div class="question-item-card">
+                            <div class="question-title"><strong>Câu ${idx + 1}:</strong> ${q.question_content || 'Nội dung câu hỏi'}</div>
+                            <div class="option-list">${optionsHtml}</div>
+                        </div>
+                    `;
+                });
+            }
+        } catch (e) {
+            container.innerHTML = '<div style="text-align:center; color: red;">Lỗi tải chi tiết câu trả lời!</div>';
+        }
     }
 
     async function saveAllScores() {
-        const inputs = document.querySelectorAll('.student-score-input');
+        const inputs = document.querySelectorAll('.student-exam-score');
         let updateCount = 0;
 
         try {
             for (let input of inputs) {
-                const profileId = input.getAttribute('data-userid');
+                const subId = input.getAttribute('data-sub-id');
+                const profileId = input.getAttribute('data-profile-id');
                 const scoreVal = input.value.trim();
 
                 if (scoreVal !== '') {
-                    const res = await fetch(`/api/submissions/grade`, {
+                    const res = await fetch(`/api/exam-results/grade`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            assignmentId: parseInt(assignmentId),
-                            userId: parseInt(profileId),
-                            score: parseFloat(scoreVal),
-                            grade: parseFloat(scoreVal)
+                            examId: parseInt(examId),
+                            studentProfileId: parseInt(profileId),
+                            submissionId: (subId && subId !== 'null' && subId !== '') ? parseInt(subId) : null,
+                            score: parseFloat(scoreVal)
                         })
                     });
-
-                    if (res.ok) {
-                        updateCount++;
-                    }
+                    if (res.ok) updateCount++;
                 }
             }
 
-            showToast(`Đã lưu thành công điểm cho ${updateCount} học sinh!`);
-            await loadRealGradingDataFromDb();
-
+            showToast(`Đã lưu điểm cho ${updateCount} học sinh!`);
+            await loadExamResults();
         } catch (err) {
             console.error(err);
             showToast('Lưu điểm thành công!');
-            await loadRealGradingDataFromDb();
+            await loadExamResults();
         }
+    }
+
+    function closeModal() {
+        document.getElementById('answerDetailModal').classList.remove('show');
     }
 
     const profileWrapper = document.getElementById('profileWrapper');
     const dropdownMenu = document.getElementById('dropdownMenu');
-
-    profileWrapper.addEventListener('click', function(e) {
-        e.stopPropagation();
-        dropdownMenu.classList.toggle('show');
-    });
-
-    window.addEventListener('click', function() {
-        if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show');
-    });
+    profileWrapper.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+    window.addEventListener('click', () => { if (dropdownMenu.classList.contains('show')) dropdownMenu.classList.remove('show'); });
 
     const darkModeToggle = document.getElementById('darkModeToggle');
-    darkModeToggle.addEventListener('click', function(e) {
+    darkModeToggle.addEventListener('click', (e) => {
         e.preventDefault();
         document.body.classList.toggle('dark-mode');
         const icon = document.getElementById('darkModeIcon');
         const text = document.getElementById('darkModeText');
-
         if (document.body.classList.contains('dark-mode')) {
             localStorage.setItem('darkMode', 'enabled');
-            icon.classList.replace('fa-moon', 'fa-sun');
-            text.textContent = 'Chế độ sáng';
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            if (text) text.textContent = 'Chế độ sáng';
         } else {
             localStorage.setItem('darkMode', 'disabled');
-            icon.classList.replace('fa-sun', 'fa-moon');
-            text.textContent = 'Chế độ tối';
+            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+            if (text) text.textContent = 'Chế độ tối';
         }
     });
 </script>
-
 </body>
 </html>

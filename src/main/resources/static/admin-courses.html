@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang chủ Quản trị - Admin</title>
+    <title>Quản lý Khóa học - Admin</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <!-- Google Font -->
@@ -71,10 +71,13 @@
         }
         .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
 
-        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; height: 100vh; }
 
+        /* Header chuẩn 70px đồng bộ */
         .header {
-            height: 70px; background: var(--bg-header); display: flex; justify-content: space-between; align-items: center; padding: 0 35px; position: relative;
+            height: 70px; min-height: 70px; max-height: 70px; flex-shrink: 0;
+            background: var(--bg-header); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 35px; position: relative; width: 100%;
         }
         .header-title { font-size: 18px; font-weight: 600; color: var(--header-title); }
         .header-right { display: flex; align-items: center; gap: 20px; }
@@ -113,38 +116,39 @@
         .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
         .dropdown-item.logout { color: #f87171; }
 
-        .content { padding: 25px 35px 35px 35px; max-width: 1280px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+        .content { padding: 25px 35px 35px 35px; max-width: 1280px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Thẻ thống kê (Stats Grid) */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-        .stat-card {
-            background: var(--bg-card); padding: 20px 24px; border-radius: 16px; border: 1px solid var(--border-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 18px;
+        /* Filter bar */
+        .filter-bar {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+            background: var(--bg-card); padding: 16px 20px; border-radius: 14px; border: 1px solid var(--border-color);
         }
-        .stat-icon {
-            width: 54px; height: 54px; border-radius: 14px; background: var(--stat-card-bg);
-            display: flex; justify-content: center; align-items: center; font-size: 24px; color: #3b82f6;
+        .search-input {
+            width: 350px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.02); color: var(--text-main); font-size: 14px; outline: none;
         }
-        .stat-info .stat-value { font-size: 22px; font-weight: 700; color: var(--text-main); }
-        .stat-info .stat-label { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
+        body.dark-mode .search-input { background: rgba(255,255,255,0.04); }
+        .search-input:focus { border-color: #3b82f6; }
+
+        .btn-primary {
+            background: #1e3c72; color: white; border: none; padding: 10px 18px; border-radius: 8px;
+            font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-primary:hover { background: #2a5298; }
 
         /* Bảng quản lý */
         .management-card {
             background: var(--bg-card); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
             padding: 20px; border: 1px solid var(--border-color); overflow-x: auto;
         }
-        .card-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
-
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); }
         th { font-weight: 600; color: var(--text-sub); background: rgba(0,0,0,0.02); }
         body.dark-mode th { background: rgba(255,255,255,0.02); }
 
-        .badge-role { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; display: inline-block; }
-        .badge-admin { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-        .badge-teacher { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-        .badge-student { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .badge-status { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; display: inline-block; }
+        .badge-active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .badge-inactive { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
 
         .btn-action {
             background: none; border: none; color: var(--text-sub); cursor: pointer; font-size: 16px; margin-right: 8px; transition: 0.2s;
@@ -166,11 +170,11 @@
         .modal-body { padding: 25px; display: flex; flex-direction: column; gap: 15px; }
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-main); }
-        .form-group input, .form-group select {
+        .form-group input, .form-group textarea, .form-group select {
             width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color);
             border-radius: 8px; color: var(--text-main); font-size: 14px; outline: none;
         }
-        body.dark-mode .form-group input, body.dark-mode .form-group select { background: rgba(255,255,255,0.03); }
+        body.dark-mode .form-group input, body.dark-mode .form-group textarea, body.dark-mode .form-group select { background: rgba(255,255,255,0.03); }
         .modal-footer { padding: 15px 25px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
         .btn-submit { background: #1e3c72; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; }
         .btn-cancel { background: #64748b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; }
@@ -182,9 +186,9 @@
 <div class="sidebar">
     <div class="sidebar-logo"><i class="fa-solid fa-shield-halved"></i></div>
     <ul class="sidebar-menu">
-        <li class="active" data-tooltip="Tổng quan Admin"><a href="/admin-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Tổng quan Admin"><a href="/admin-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
         <li data-tooltip="Quản lý Người dùng"><a href="/admin-users.html"><i class="fa-solid fa-users-gear"></i></a></li>
-        <li data-tooltip="Quản lý Khóa học"><a href="/admin-courses.html"><i class="fa-solid fa-graduation-cap"></i></a></li>
+        <li class="active" data-tooltip="Quản lý Khóa học"><a href="/admin-courses.html"><i class="fa-solid fa-graduation-cap"></i></a></li>
         <li data-tooltip="Quản lý Lớp học"><a href="/admin-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
         <li data-tooltip="Hệ thống & Cài đặt"><a href="/admin-settings.html"><i class="fa-solid fa-gears"></i></a></li>
         <li data-tooltip="Báo cáo thống kê"><a href="/admin-reports.html"><i class="fa-solid fa-chart-line"></i></a></li>
@@ -194,7 +198,7 @@
 <!-- Main Container -->
 <div class="main-container">
     <div class="header">
-        <div class="header-title">Trang chủ Quản trị hệ thống</div>
+        <div class="header-title">Quản lý Chương trình & Khóa học</div>
 
         <div class="header-right">
             <div class="notification-icon" onclick="alert('Không có cảnh báo hệ thống mới!')" title="Thông báo">
@@ -222,109 +226,74 @@
 
     <!-- Content -->
     <div class="content">
-        <!-- Thẻ Thống kê -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value" id="totalUsersCount">0</div>
-                    <div class="stat-label">Tổng số người dùng</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="color: #10b981;"><i class="fa-solid fa-chalkboard-user"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value" id="totalTeachersCount">0</div>
-                    <div class="stat-label">Giáo viên hoạt động</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="color: #f59e0b;"><i class="fa-solid fa-folder-open"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value" id="totalExamsCount">0</div>
-                    <div class="stat-label">Đề thi trực tuyến</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="color: #ef4444;"><i class="fa-solid fa-layer-group"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value" id="totalClassesCount">0</div>
-                    <div class="stat-label">Lớp học quản lý</div>
-                </div>
-            </div>
+        <div class="filter-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Tìm theo mã hoặc tên khóa học..." oninput="filterCourses()">
+            <button class="btn-primary" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Thêm khóa học mới</button>
         </div>
 
-        <!-- Bảng Quản lý Người dùng -->
         <div class="management-card">
-            <div class="card-header-flex">
-                <div class="card-title">Danh sách Tài khoản Hệ thống</div>
-                <button class="btn-primary" style="background: #1e3c72; padding: 8px 16px; border: none; color: white; border-radius: 6px; cursor: pointer;" onclick="openAddUserModal()"><i class="fa-solid fa-user-plus"></i> Thêm tài khoản</button>
-            </div>
             <table>
                 <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Họ và tên</th>
-                    <th>Tên đăng nhập</th>
-                    <th>Email</th>
-                    <th>Vai trò</th>
+                    <th>Mã khóa học</th>
+                    <th>Tên khóa học</th>
+                    <th>Mô tả</th>
+                    <th>Trạng thái</th>
                     <th>Thao tác</th>
                 </tr>
                 </thead>
-                <tbody id="userTableBody">
-                <tr><td colspan="6" style="text-align: center; color: var(--text-sub);">Đang tải dữ liệu từ cơ sở dữ liệu...</td></tr>
+                <tbody id="courseTableBody">
+                <tr><td colspan="6" style="text-align:center; padding: 25px; color: var(--text-sub);">Đang tải danh sách khóa học...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- MODAL THÊM / SỬA TÀI KHOẢN -->
-<div id="userModal" class="modal-overlay">
+<!-- MODAL THÊM / SỬA KHÓA HỌC -->
+<div id="courseModal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">
-            <div class="modal-title" id="modalTitle">Thêm tài khoản mới</div>
-            <button class="btn-close-modal" onclick="closeUserModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-title" id="modalTitle">Thêm khóa học mới</div>
+            <button class="btn-close-modal" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body">
-            <input type="hidden" id="editingUserId">
+            <input type="hidden" id="editCourseId">
             <div class="form-group">
-                <label>Họ và tên *</label>
-                <input type="text" id="modalFullName" placeholder="Nhập họ và tên" required>
+                <label>Mã khóa học *</label>
+                <input type="text" id="courseCode" placeholder="Ví dụ: TOAN-CB01" required>
             </div>
             <div class="form-group">
-                <label>Tên đăng nhập *</label>
-                <input type="text" id="modalUsername" placeholder="Nhập username" required>
-            </div>
-            <div class="form-group" id="passwordGroup">
-                <label>Mật khẩu *</label>
-                <input type="password" id="modalPassword" placeholder="Nhập mật khẩu">
+                <label>Tên khóa học *</label>
+                <input type="text" id="courseName" placeholder="Ví dụ: Lập trình Java Cơ bản" required>
             </div>
             <div class="form-group">
-                <label>Email *</label>
-                <input type="email" id="modalEmail" placeholder="Nhập email" required>
+                <label>Mô tả khóa học</label>
+                <textarea id="courseDesc" rows="3" placeholder="Nhập mô tả tóm tắt..."></textarea>
             </div>
             <div class="form-group">
-                <label>Vai trò*</label>
-                <select id="modalRole">
-                    <option value="STUDENT">STUDENT</option>
-                    <option value="TEACHER">TEACHER</option>
-                    <option value="ADMIN">ADMIN</option>
+                <label>Trạng thái</label>
+                <select id="courseStatus">
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
                 </select>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeUserModal()">Hủy</button>
-            <button class="btn-submit" onclick="saveUser()">Lưu lại</button>
+            <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn-submit" onclick="saveCourse()">Lưu lại</button>
         </div>
     </div>
 </div>
 
 <script>
+    let globalCourses = [];
+
     window.addEventListener('DOMContentLoaded', async () => {
         const userRole = (localStorage.getItem('role') || '').toUpperCase();
         if (!userRole || !userRole.includes('ADMIN')) {
-            alert('Bạn không có quyền truy cập trang quản trị hệ thống!');
+            alert('Bạn không có quyền truy cập trang này!');
             window.location.href = '/login.html';
             return;
         }
@@ -349,163 +318,155 @@
             text.textContent = 'Chế độ tối';
         }
 
-        await fetchAdminDashboardData();
+        await loadCourses();
     });
 
-    let globalUsersList = [];
-
-    async function fetchAdminDashboardData() {
+    async function loadCourses() {
         try {
-            const response = await fetch('/api/admin/dashboard-stats');
-            if (response.ok) {
-                const data = await response.json();
+            const res = await fetch('/api/admin/courses');
+            if (res.ok) {
+                globalCourses = await res.json();
 
-                document.getElementById('totalUsersCount').textContent = data.totalUsers;
-                document.getElementById('totalTeachersCount').textContent = data.totalTeachers;
-                document.getElementById('totalExamsCount').textContent = data.totalExams;
-                document.getElementById('totalClassesCount').textContent = data.totalClasses;
+                // Sắp xếp ID tăng dần từ nhỏ đến lớn
+                globalCourses.sort((a, b) => {
+                    const idA = Number(a.id_course || a.idCourse || a.id || 0);
+                    const idB = Number(b.id_course || b.idCourse || b.id || 0);
+                    return idA - idB;
+                });
 
-                globalUsersList = data.users || [];
-                renderUserTable(globalUsersList);
+                renderTable(globalCourses);
             } else {
-                console.error("Không thể tải dữ liệu thống kê từ server");
+                renderTable([]);
             }
-        } catch (err) {
-            console.error("Lỗi kết nối:", err);
+        } catch (e) {
+            console.error("Lỗi tải khóa học:", e);
+            renderTable([]);
         }
     }
 
-    function renderUserTable(users) {
-        const tbody = document.getElementById('userTableBody');
+    function renderTable(courses) {
+        const tbody = document.getElementById('courseTableBody');
         tbody.innerHTML = '';
 
-        if (!users || users.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-sub);">Không có tài khoản nào trong cơ sở dữ liệu.</td></tr>`;
+        if (!courses || courses.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 25px; color: var(--text-sub);">Không có khóa học nào</td></tr>';
             return;
         }
 
-        users.forEach((u, index) => {
-            const userId = u.idUser || u.id || (index + 1);
-            const fullName = u.fullName || 'Chưa cập nhật';
-            const username = u.username || '';
-            const email = u.email || 'Chưa cập nhật';
-            const role = (u.role || 'STUDENT').toUpperCase();
-
-            let badgeClass = 'badge-student';
-            if (role.includes('ADMIN')) badgeClass = 'badge-admin';
-            else if (role.includes('TEACHER')) badgeClass = 'badge-teacher';
+        courses.forEach((c) => {
+            const id = c.id_course || c.idCourse || c.id;
+            const code = c.course_code || c.courseCode || c.code || `KH-#${id}`;
+            const name = c.course_name || c.courseName || c.name || 'Chưa đặt tên';
+            const desc = c.description || c.desc || 'Chưa có mô tả';
+            const status = (c.status || 'ACTIVE').toUpperCase();
+            const badgeClass = status === 'ACTIVE' ? 'badge-active' : 'badge-inactive';
 
             tbody.innerHTML += `
                 <tr>
-                    <td>#${userId}</td>
-                    <td style="font-weight: 600;">${fullName}</td>
-                    <td>${username}</td>
-                    <td>${email}</td>
-                    <td><span class="badge-role ${badgeClass}">${role}</span></td>
+                    <td>#${id}</td>
+                    <td style="font-weight: 600; color: #3b82f6;">${code}</td>
+                    <td style="font-weight: 600;">${name}</td>
+                    <td>${desc}</td>
+                    <td><span class="badge-status ${badgeClass}">${status}</span></td>
                     <td>
-                        <button class="btn-action" title="Sửa" onclick="openEditUserModal(${userId})"><i class="fa-solid fa-pen-to-square" style="color: #3b82f6;"></i></button>
-                        <button class="btn-action" title="Xóa" onclick="deleteUser(${userId})"><i class="fa-solid fa-trash" style="color: #ef4444;"></i></button>
+                        <button class="btn-action" onclick="openEditModal(${id})" title="Sửa"><i class="fa-solid fa-pen-to-square" style="color:#3b82f6;"></i></button>
+                        <button class="btn-action" onclick="deleteCourse(${id})" title="Xóa"><i class="fa-solid fa-trash" style="color:#ef4444;"></i></button>
                     </td>
                 </tr>
             `;
         });
     }
 
-    function openAddUserModal() {
-        document.getElementById('modalTitle').textContent = "Thêm tài khoản mới";
-        document.getElementById('editingUserId').value = "";
-        document.getElementById('modalFullName').value = "";
-        document.getElementById('modalUsername').value = "";
-        document.getElementById('modalPassword').value = "";
-        document.getElementById('modalEmail').value = "";
-        document.getElementById('modalRole').value = "STUDENT";
-        document.getElementById('passwordGroup').style.display = "flex";
-        document.getElementById('userModal').style.display = "flex";
+    function filterCourses() {
+        const kw = document.getElementById('searchInput').value.toLowerCase().trim();
+        const filtered = globalCourses.filter(c => {
+            const code = (c.course_code || c.courseCode || c.code || '').toLowerCase();
+            const name = (c.course_name || c.courseName || c.name || '').toLowerCase();
+            return code.includes(kw) || name.includes(kw);
+        });
+        renderTable(filtered);
     }
 
-    function openEditUserModal(userId) {
-        const user = globalUsersList.find(u => (u.idUser === userId || u.id === userId));
-        if (!user) return;
-
-        document.getElementById('modalTitle').textContent = "Chỉnh sửa tài khoản";
-        document.getElementById('editingUserId').value = userId;
-        document.getElementById('modalFullName').value = user.fullName || "";
-        document.getElementById('modalUsername').value = user.username || "";
-        document.getElementById('modalEmail').value = user.email || "";
-        document.getElementById('modalRole').value = (user.role || "STUDENT").toUpperCase();
-        document.getElementById('passwordGroup').style.display = "none";
-        document.getElementById('userModal').style.display = "flex";
+    function openAddModal() {
+        document.getElementById('modalTitle').textContent = "Thêm khóa học mới";
+        document.getElementById('editCourseId').value = "";
+        document.getElementById('courseCode').value = "";
+        document.getElementById('courseName').value = "";
+        document.getElementById('courseDesc').value = "";
+        document.getElementById('courseStatus').value = "ACTIVE";
+        document.getElementById('courseModal').style.display = "flex";
     }
 
-    function closeUserModal() {
-        document.getElementById('userModal').style.display = 'none';
+    function openEditModal(id) {
+        const c = globalCourses.find(item => {
+            const itemId = item.id_course || item.idCourse || item.id;
+            return itemId == id;
+        });
+        if (!c) return;
+
+        document.getElementById('modalTitle').textContent = "Chỉnh sửa khóa học";
+        document.getElementById('editCourseId').value = id;
+        document.getElementById('courseCode').value = c.course_code || c.courseCode || c.code || "";
+        document.getElementById('courseName').value = c.course_name || c.courseName || c.name || "";
+        document.getElementById('courseDesc').value = c.description || c.desc || "";
+        document.getElementById('courseStatus').value = (c.status || "ACTIVE").toUpperCase();
+        document.getElementById('courseModal').style.display = "flex";
     }
 
-    async function saveUser() {
-        const userId = document.getElementById('editingUserId').value;
-        const fullName = document.getElementById('modalFullName').value.trim();
-        const username = document.getElementById('modalUsername').value.trim();
-        const email = document.getElementById('modalEmail').value.trim();
-        const role = document.getElementById('modalRole').value;
-        const password = document.getElementById('modalPassword').value.trim();
+    function closeModal() {
+        document.getElementById('courseModal').style.display = 'none';
+    }
 
-        if (!fullName || !username || !email) {
-            alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+    async function saveCourse() {
+        const id = document.getElementById('editCourseId').value;
+        const courseCode = document.getElementById('courseCode').value.trim();
+        const courseName = document.getElementById('courseName').value.trim();
+        const description = document.getElementById('courseDesc').value.trim();
+        const status = document.getElementById('courseStatus').value;
+
+        if (!courseCode || !courseName) {
+            alert('Vui lòng nhập đầy đủ mã và tên khóa học!');
             return;
         }
 
+        const url = id ? `/api/admin/courses/${id}` : '/api/admin/courses';
+        const method = id ? 'PUT' : 'POST';
+
         try {
-            let url = '/api/admin/users';
-            let method = 'POST';
-            let bodyData = { fullName, username, email, role };
-
-            if (userId) {
-                url = `/api/admin/users/${userId}`;
-                method = 'PUT';
-            } else {
-                if (!password) {
-                    alert("Vui lòng nhập mật khẩu cho tài khoản mới!");
-                    return;
-                }
-                bodyData.password = password;
-            }
-
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyData)
+            const res = await fetch(url, {
+                method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ courseCode, courseName, description, status })
             });
 
-            if (response.ok) {
-                alert("Lưu tài khoản thành công!");
-                closeUserModal();
-                await fetchAdminDashboardData();
+            if (res.ok) {
+                alert(id ? 'Cập nhật khóa học thành công!' : 'Thêm khóa học thành công!');
+                closeModal();
+                await loadCourses();
             } else {
-                const errText = await response.text();
-                alert("Thất bại: " + (errText || "Có lỗi xảy ra"));
+                const errText = await res.text();
+                alert('Thất bại: ' + (errText || 'Lỗi khi lưu dữ liệu!'));
             }
-        } catch (err) {
-            console.error(err);
-            alert("Lỗi kết nối đến máy chủ!");
+        } catch (e) {
+            console.error(e);
+            alert('Không thể kết nối tới máy chủ!');
         }
     }
 
-    async function deleteUser(userId) {
-        if (confirm("Bạn có chắc chắn muốn xóa tài khoản này khỏi hệ thống không?")) {
+    async function deleteCourse(id) {
+        if (confirm('Bạn có chắc chắn muốn xóa khóa học này khỏi hệ thống?')) {
             try {
-                const response = await fetch(`/api/admin/users/${userId}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    alert("Xóa tài khoản thành công!");
-                    await fetchAdminDashboardData();
+                const res = await fetch(`/api/admin/courses/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert('Xóa thành công!');
+                    await loadCourses();
                 } else {
-                    alert("Xóa tài khoản thất bại!");
+                    const errText = await res.text();
+                    alert('Xóa thất bại: ' + (errText || 'Có lỗi xảy ra'));
                 }
-            } catch (err) {
-                console.error(err);
-                alert("Lỗi kết nối máy chủ!");
+            } catch (e) {
+                console.error(e);
+                alert('Không thể kết nối tới máy chủ!');
             }
         }
     }

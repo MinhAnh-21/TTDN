@@ -149,16 +149,23 @@
         .btn-action:hover { opacity: 0.9; }
 
         .btn-completed {
-            background: #64748b !important; color: white !important; cursor: not-allowed !important; opacity: 0.85;
+            background: #10b981 !important; color: white !important; cursor: pointer; opacity: 1;
         }
 
         .badge-submitted { background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
-        .badge-unsubmitted { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
-        .badge-graded { background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
 
         tr.assignment-row:hover { background: rgba(59, 130, 246, 0.05) !important; }
         .assignment-link-title { color: var(--text-main); transition: color 0.2s; }
         tr.assignment-row:hover .assignment-link-title { color: #3b82f6; }
+
+        /* Bảng điểm cá nhân */
+        .subject-score-card { margin-bottom: 30px; }
+        .subject-score-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .subject-score-title { font-size: 16px; font-weight: 600; color: #3b82f6; display: flex; align-items: center; gap: 10px; }
+        .score-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
+        .score-table th, .score-table td { padding: 16px 20px; font-size: 14px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .score-table th { background: rgba(59,130,246,0.08); color: var(--text-main); font-weight: 600; }
+        .score-table th.th-avg, .score-table td.td-avg { background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 700; font-size: 15px; }
     </style>
 </head>
 <body class="dark-mode">
@@ -257,7 +264,7 @@
             <div id="tabExams" class="tab-pane">
                 <div class="empty-box" id="emptyExamBox" style="display: none;">
                     <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
-                    <p>Chưa có bài thi trực tuyến nào được giao!</p>
+                    <p>Chưa có bài thi trực tuyến nào được giao cho lớp này!</p>
                 </div>
 
                 <div id="examTableContainer">
@@ -278,21 +285,48 @@
                 </div>
             </div>
 
-            <div id="tabNews" class="tab-pane"><div class="empty-box"><div class="empty-icon"><i class="fa-solid fa-bullhorn"></i></div><p>Chưa có thông báo nào.</p></div></div>
-            <div id="tabClassmates" class="tab-pane"><div id="classmatesTableContainer"><table style="width:100%; border-collapse:collapse;"><tbody id="classmatesTableBody"></tbody></table></div></div>
-            <div id="tabScores" class="tab-pane"><div id="scoresTablesContainer"></div></div>
+            <!-- TAB 3: BẢNG TIN -->
+            <div id="tabNews" class="tab-pane">
+                <div class="empty-box">
+                    <div class="empty-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                    <p>Chưa có thông báo nào từ giáo viên.</p>
+                </div>
+            </div>
+
+            <!-- TAB 4: DANH SÁCH BẠN HỌC -->
+            <div id="tabClassmates" class="tab-pane">
+                <div id="classmatesTableContainer">
+                    <table style="width:100%; border-collapse:collapse; background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                        <thead>
+                        <tr style="background: rgba(59,130,246,0.1); text-align: left;">
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Họ và tên</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Email</th>
+                            <th style="padding: 14px 16px; font-size: 14px; color: var(--text-main);">Vai trò</th>
+                        </tr>
+                        </thead>
+                        <tbody id="classmatesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 5: BẢNG ĐIỂM CÁ NHÂN -->
+            <div id="tabScores" class="tab-pane">
+                <div id="scoresTablesContainer">
+                    <div style="text-align: center; padding: 40px; color: var(--text-sub);">Đang tải bảng điểm cá nhân...</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const classId = urlParams.get('id') || 1;
+    const classId = urlParams.get('id') || urlParams.get('classId') || 1;
 
     let assignmentsList = [];
     let examsList = [];
     let currentUserId = null;
-    let currentStudentProfileId = null;
+    let currentStudentProfileId = 2;
 
     function formatDateTime(dtStr) {
         if (!dtStr) return 'Không giới hạn';
@@ -319,9 +353,8 @@
             document.documentElement.classList.add('dark-mode');
         }
 
-        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email');
+        let currentUsername = localStorage.getItem('username') || localStorage.getItem('email') || 'linh';
 
-        // 1. TÌM CHÍNH XÁC ID HỒ SƠ HỌC SINH CỦA TÀI KHOẢN ĐANG ĐĂNG NHẬP
         try {
             if (currentUsername) {
                 const userRes = await fetch(`/api/users/profile/${currentUsername}`);
@@ -333,39 +366,18 @@
                     const stdRes = await fetch(`/api/classes/student-profile/${currentUserId}`);
                     if (stdRes.ok) {
                         const stdData = await stdRes.json();
-                        currentStudentProfileId = stdData.idStudentProfiles || stdData.id;
+                        currentStudentProfileId = stdData.id_student_profiles || stdData.idStudentProfiles || stdData.id || currentUserId;
                         localStorage.setItem('studentProfileId', currentStudentProfileId);
                     }
                 }
             }
-        } catch (e) {
-            console.error("Lỗi lấy thông tin học sinh:", e);
-        }
+        } catch (e) {}
 
-        // Nếu chưa lấy được, tự động tìm qua danh sách bạn học của lớp
-        if (!currentStudentProfileId) {
-            try {
-                const stdClassRes = await fetch(`/api/classes/${classId}/students`);
-                if (stdClassRes.ok) {
-                    const stdList = await stdClassRes.json();
-                    const me = stdList.find(s => s.fullName === 'Nguyễn Nhật Linh' || s.username === currentUsername);
-                    if (me) {
-                        currentStudentProfileId = me.idStudentProfiles || me.id || 7;
-                        localStorage.setItem('studentProfileId', currentStudentProfileId);
-                    }
-                }
-            } catch (e) {}
-        }
-
-        if (!currentStudentProfileId) {
-            currentStudentProfileId = localStorage.getItem('studentProfileId') || 7; // Fallback chính xác ID HS007
-        }
-
-        // 2. TẢI DỮ LIỆU ĐỀ THI
         await loadClassInfo();
         await loadClassAssignments();
         await loadClassExams();
         await loadClassmates();
+        await loadStudentScores();
     });
 
     async function loadClassInfo() {
@@ -377,9 +389,7 @@
                 document.getElementById('schoolYearDisplay').textContent = `Năm học: ${data.schoolYear || '2025-2026'} | Giáo viên phụ trách: Nguyễn Văn Minh`;
                 document.getElementById('headerPageTitle').textContent = `Chi tiết lớp học: ${data.className}`;
             }
-        } catch (err) {
-            console.error(err);
-        }
+        } catch (err) {}
     }
 
     async function loadClassAssignments() {
@@ -387,22 +397,85 @@
             const res = await fetch(`/api/classes/${classId}/assignments`);
             if (res.ok) {
                 assignmentsList = await res.json();
-                renderAssignments();
+                await renderAssignments();
             }
-        } catch (err) {
-            console.error(err);
+        } catch (err) {}
+    }
+
+    async function renderAssignments() {
+        const tbody = document.getElementById('assignmentTableBody');
+        const emptyBox = document.getElementById('emptyAssignmentBox');
+        const tableContainer = document.getElementById('assignmentTableContainer');
+
+        tbody.innerHTML = '';
+        if (!assignmentsList || assignmentsList.length === 0) {
+            emptyBox.style.display = 'block';
+            tableContainer.style.display = 'none';
+            return;
         }
+
+        emptyBox.style.display = 'none';
+        tableContainer.style.display = 'block';
+
+        for (let a of assignmentsList) {
+            const aId = a.idAssignments || a.id_assignments || a.idAssignment || a.id;
+            const dueDateFormatted = formatDateTime(a.dueDate);
+
+            let isSubmitted = false;
+            let scoreText = '-';
+
+            try {
+                const subRes = await fetch(`/api/submissions/check?assignmentId=${aId}&userId=${currentStudentProfileId}`);
+                if (subRes.ok) {
+                    const sub = await subRes.json();
+                    if (sub && (sub.submitted_file || sub.submittedFile)) {
+                        isSubmitted = true;
+                        if (sub.grade != null) {
+                            scoreText = `<strong style="color: #3b82f6;">${sub.grade} / 10</strong>`;
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            let statusBadge = isSubmitted
+                ? `<span class="badge-submitted">Đã nộp</span>`
+                : `<span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;">Chưa nộp</span>`;
+
+            let actionBtn = isSubmitted
+                ? `<button onclick="viewAssignment(${aId})" class="btn-action btn-completed"><i class="fa-solid fa-check"></i> Đã nộp</button>`
+                : `<button onclick="viewAssignment(${aId})" class="btn-action"><i class="fa-solid fa-eye"></i> Xem</button>`;
+
+            tbody.innerHTML += `
+                <tr class="assignment-row" style="border-bottom: 1px solid var(--border-color); cursor: pointer;" onclick="viewAssignment(${aId})">
+                    <td style="padding: 14px 16px;">
+                        <span class="assignment-link-title" style="font-weight: 600; font-size: 15px;">${a.title}</span>
+                    </td>
+                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${dueDateFormatted}</td>
+                    <td style="padding: 14px 16px;">${statusBadge}</td>
+                    <td style="padding: 14px 16px; text-align: center;">${scoreText}</td>
+                    <td style="padding: 14px 16px; text-align: center;" onclick="event.stopPropagation()">
+                        ${actionBtn}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function viewAssignment(assignmentId) {
+        if (!assignmentId || assignmentId === 'undefined') return;
+        window.location.href = `/student-assignment-detail.html?assignmentId=${assignmentId}&classId=${classId}`;
     }
 
     async function loadClassExams() {
         try {
-            const res = await fetch(`/api/exams`);
+            // LỌC ĐỀ THI CHÍNH XÁC RIÊNG CHO LỚP NÀY TỪ CSDL
+            const res = await fetch(`/api/classes/${classId}/exams`);
             if (res.ok) {
                 examsList = await res.json();
                 await renderExams(examsList);
             }
         } catch (err) {
-            console.error(err);
+            console.error("Lỗi tải danh sách đề thi của lớp:", err);
         }
     }
 
@@ -422,30 +495,26 @@
         tableContainer.style.display = 'block';
 
         for (let ex of list) {
-            const exId = ex.idExams || ex.id;
+            const exId = ex.idExams || ex.id_exams || ex.id;
             let typeText = ex.examType === '15_MINUTES' ? 'Thi 15 phút' : (ex.examType === 'FINAL' ? 'Thi cuối kỳ' : 'Thi giữa kỳ');
 
-            const startTimeFormatted = formatDateTime(ex.startTime);
-            const endTimeFormatted = formatDateTime(ex.endTime);
+            const startTimeFormatted = formatDateTime(ex.startTime || ex.start_time);
+            const endTimeFormatted = formatDateTime(ex.endTime || ex.end_time);
 
             let hasSubmitted = false;
             let examScoreText = '-';
 
-            // Gọi API kiểm tra chính xác bài làm của học sinh
             try {
-                // Kiểm tra trực tiếp qua endpoint submissions
                 const subListRes = await fetch(`/api/exams/${exId}/submissions`);
                 if (subListRes.ok) {
                     const submissions = await subListRes.json();
-                    const mySub = submissions.find(s => s.studentProfileId == currentStudentProfileId || s.fullName === 'Nguyễn Nhật Linh');
+                    const mySub = submissions.find(s => s.studentProfileId == currentStudentProfileId || (s.fullName && s.fullName.includes('Linh')));
                     if (mySub) {
                         hasSubmitted = true;
                         examScoreText = `<span style="font-weight: 700; color: #10b981;">${mySub.score != null ? mySub.score : 10} / 10</span>`;
                     }
                 }
-            } catch (e) {
-                console.error("Lỗi kiểm tra bài nộp:", e);
-            }
+            } catch (e) {}
 
             let actionBtnHtml = '';
             let rowClickAction = `onclick="goToTakeExam(${exId})"`;
@@ -462,10 +531,10 @@
             tbody.innerHTML += `
                 <tr class="assignment-row" style="${rowStyle}" ${rowClickAction}>
                     <td style="padding: 14px 16px;">
-                        <span class="assignment-link-title" style="font-weight: 600; font-size: 15px;">${ex.examName}</span>
+                        <span class="assignment-link-title" style="font-weight: 600; font-size: 15px;">${ex.examName || ex.exam_name}</span>
                     </td>
                     <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${typeText}</td>
-                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${ex.durationMinutes || 45} phút</td>
+                    <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${ex.durationMinutes || ex.duration_minutes || 45} phút</td>
                     <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${startTimeFormatted}</td>
                     <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${endTimeFormatted}</td>
                     <td style="padding: 14px 16px; text-align: center; font-size: 14px;">${examScoreText}</td>
@@ -479,24 +548,6 @@
 
     function goToTakeExam(examId) {
         window.location.href = `/student-take-exam.html?id=${examId}&classId=${classId}`;
-    }
-
-    function renderAssignments() {
-        const tbody = document.getElementById('assignmentTableBody');
-        tbody.innerHTML = '';
-        if (assignmentsList) {
-            assignmentsList.forEach(a => {
-                tbody.innerHTML += `
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <td style="padding: 14px 16px;">${a.title}</td>
-                        <td style="padding: 14px 16px; color: var(--text-sub); font-size: 13px;">${a.dueDate ? a.dueDate.replace('T', ' ') : 'Không giới hạn'}</td>
-                        <td style="padding: 14px 16px;"><span class="badge-submitted">Đã giao</span></td>
-                        <td style="padding: 14px 16px; text-align: center;">-</td>
-                        <td style="padding: 14px 16px; text-align: center;"><button class="btn-action">Xem</button></td>
-                    </tr>
-                `;
-            });
-        }
     }
 
     async function loadClassmates() {
@@ -516,9 +567,76 @@
                     `;
                 });
             }
-        } catch (err) {
-            console.error(err);
+        } catch (err) {}
+    }
+
+    async function loadStudentScores() {
+        const sendParam = currentStudentProfileId || localStorage.getItem('studentProfileId') || '2';
+        try {
+            const res = await fetch(`/api/classes/${classId}/student-scores/${sendParam}`);
+            if (res.ok) {
+                const subjects = await res.json();
+                renderStudentScoreTables(subjects);
+                return;
+            }
+        } catch (e) {}
+    }
+
+    function renderStudentScoreTables(subjects) {
+        const container = document.getElementById('scoresTablesContainer');
+        container.innerHTML = '';
+
+        if (!subjects || subjects.length === 0) {
+            container.innerHTML = '<div class="empty-box"><p>Chưa có bảng điểm môn học nào trong lớp.</p></div>';
+            return;
         }
+
+        subjects.forEach(sub => {
+            const hw = sub.homeworkScore != null ? Number(sub.homeworkScore).toFixed(1).replace('.0', '') : '-';
+            const s15 = sub.score15m != null ? Number(sub.score15m).toFixed(1).replace('.0', '') : '-';
+            const mid = sub.midtermScore != null ? Number(sub.midtermScore).toFixed(1).replace('.0', '') : '-';
+            const fin = sub.finalScore != null ? Number(sub.finalScore).toFixed(1).replace('.0', '') : '-';
+
+            let avgDisplay = '-';
+            if (sub.homeworkScore != null && sub.score15m != null && sub.midtermScore != null && sub.finalScore != null) {
+                let total = (Number(sub.homeworkScore) * 0.10) +
+                            (Number(sub.score15m) * 0.10) +
+                            (Number(sub.midtermScore) * 0.30) +
+                            (Number(sub.finalScore) * 0.50);
+                let avgVal = (Math.round(total * 10) / 10).toFixed(1);
+                avgDisplay = `<span style="color: #10b981; font-weight: 700;">${avgVal}</span>`;
+            }
+
+            container.innerHTML += `
+                <div class="subject-score-card">
+                    <div class="subject-score-header">
+                        <div class="subject-score-title">
+                            <i class="fa-solid fa-book-bookmark"></i> Môn: ${sub.subjectName}
+                        </div>
+                    </div>
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Bài tập về nhà (10%)</th>
+                                <th style="width: 20%;">Điểm 15 phút (10%)</th>
+                                <th style="width: 20%;">Điểm giữa kỳ (30%)</th>
+                                <th style="width: 20%;">Điểm thi cuối kỳ (50%)</th>
+                                <th style="width: 20%;" class="th-avg">Điểm trung bình môn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${hw}</td>
+                                <td>${s15}</td>
+                                <td>${mid}</td>
+                                <td>${fin}</td>
+                                <td class="td-avg">${avgDisplay}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        });
     }
 
     function switchTab(tabName, element, titlePrefix) {
@@ -531,7 +649,10 @@
         else if (tabName === 'exams') document.getElementById('tabExams').classList.add('active');
         else if (tabName === 'news') document.getElementById('tabNews').classList.add('active');
         else if (tabName === 'classmates') document.getElementById('tabClassmates').classList.add('active');
-        else if (tabName === 'scores') document.getElementById('tabScores').classList.add('active');
+        else if (tabName === 'scores') {
+            document.getElementById('tabScores').classList.add('active');
+            loadStudentScores();
+        }
 
         const className = document.getElementById('classNameDisplay').textContent;
         document.getElementById('headerPageTitle').textContent = `${titlePrefix}: ${className}`;

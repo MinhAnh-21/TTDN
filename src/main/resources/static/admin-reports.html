@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Thống kê - Admin</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-sidebar: linear-gradient(135deg, #1e3c72, #2a5298);
+            --text-main: #333333;
+            --text-sub: #777777;
+            --border-color: rgba(0,0,0,0.05);
+            --header-title: #333333;
+            --card-hover-border: #1e3c72;
+            --icon-color: #1e3c72;
+            --modal-bg: #ffffff;
+            --stat-card-bg: rgba(30, 60, 114, 0.05);
+        }
+
+        body.dark-mode {
+            --bg-body: #181f30;
+            --bg-header: #181f30;
+            --bg-card: #202a40;
+            --bg-sidebar: #131826;
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --header-title: #ffffff;
+            --card-hover-border: #3b82f6;
+            --icon-color: #3b82f6;
+            --modal-bg: #202a40;
+            --stat-card-bg: rgba(255, 255, 255, 0.04);
+        }
+
+        body { background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 100px; background: var(--bg-sidebar); display: flex;
+            flex-direction: column; align-items: center; padding: 22px 0;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10;
+        }
+        .sidebar-logo {
+            width: 52px; height: 52px; background: white; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center; color: #1e3c72;
+            font-size: 24px; font-weight: bold; margin-bottom: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .sidebar-logo { background: #202a40; color: #ffffff; }
+
+        .sidebar-menu { list-style: none; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; }
+        .sidebar-menu li { position: relative; }
+        .sidebar-menu li a {
+            width: 56px; height: 56px; display: flex; justify-content: center; align-items: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 22px; border-radius: 16px; transition: .3s; text-decoration: none;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { color: #ffffff; background: rgba(255, 255, 255, 0.15); }
+
+        .sidebar-menu li::after {
+            content: attr(data-tooltip); position: absolute; left: 90px; top: 50%; transform: translateY(-50%);
+            background: #202a40; color: white; padding: 6px 14px; font-size: 13px; border-radius: 6px;
+            white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; z-index: 100; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-menu li:hover::after { opacity: 1; visibility: visible; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; height: 100vh; }
+
+        /* Header chuẩn 70px */
+        .header {
+            height: 70px; min-height: 70px; max-height: 70px; flex-shrink: 0;
+            background: var(--bg-header); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 35px; position: relative; width: 100%;
+        }
+        .header-title { font-size: 18px; font-weight: 600; color: var(--header-title); }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+
+        .notification-icon {
+            position: relative; font-size: 20px; color: var(--text-sub); cursor: pointer; transition: color 0.3s;
+        }
+        .notification-icon:hover { color: #3b82f6; }
+        .notification-badge {
+            position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+            font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: 600;
+        }
+
+        .user-profile-wrapper {
+            position: relative; display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 5px 10px; border-radius: 8px; transition: background 0.2s; user-select: none;
+        }
+        .user-profile-wrapper:hover { background: rgba(255, 255, 255, 0.05); }
+        .avatar {
+            width: 40px; height: 40px; background: #1e3c72; color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 16px; overflow: hidden;
+        }
+        .user-info .name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .user-info .role { font-size: 12px; color: var(--text-sub); }
+
+        .dropdown-menu-custom {
+            position: absolute; top: 65px; right: 0; width: 240px; background: #202a40; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); padding: 8px 0; display: none; z-index: 1000; border: 1px solid var(--border-color);
+        }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #e2e8f0; font-size: 14px; text-decoration: none; transition: background 0.2s;
+        }
+        .dropdown-item i { width: 18px; color: #94a3b8; font-size: 15px; }
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 0; }
+        .dropdown-item.logout { color: #f87171; }
+
+        .content { padding: 25px 35px 35px 35px; max-width: 1280px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .stat-card {
+            background: var(--bg-card); padding: 20px 24px; border-radius: 16px; border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 18px;
+        }
+        .stat-icon {
+            width: 54px; height: 54px; border-radius: 14px; background: var(--stat-card-bg);
+            display: flex; justify-content: center; align-items: center; font-size: 24px; color: #3b82f6;
+        }
+        .stat-info .stat-value { font-size: 22px; font-weight: 700; color: var(--text-main); }
+        .stat-info .stat-label { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
+
+        /* Charts Layout */
+        .charts-row-2col { display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px; }
+        .charts-row-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        @media (max-width: 992px) {
+            .charts-row-2col, .charts-row-equal { grid-template-columns: 1fr; }
+        }
+
+        .chart-card {
+            background: var(--bg-card); border-radius: 16px; padding: 20px 24px; border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 12px;
+        }
+        .chart-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .chart-container { position: relative; height: 240px; width: 100%; display: flex; justify-content: center; align-items: center; }
+
+        /* Bảng */
+        .management-card {
+            background: var(--bg-card); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            padding: 20px; border: 1px solid var(--border-color); overflow-x: auto;
+        }
+        .card-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); }
+        th { font-weight: 600; color: var(--text-sub); background: rgba(0,0,0,0.02); }
+        body.dark-mode th { background: rgba(255,255,255,0.02); }
+
+        .badge-score { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .badge-high { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .badge-low { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-logo"><i class="fa-solid fa-shield-halved"></i></div>
+    <ul class="sidebar-menu">
+        <li data-tooltip="Tổng quan Admin"><a href="/admin-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
+        <li data-tooltip="Quản lý Người dùng"><a href="/admin-users.html"><i class="fa-solid fa-users-gear"></i></a></li>
+        <li data-tooltip="Quản lý Khóa học"><a href="/admin-courses.html"><i class="fa-solid fa-graduation-cap"></i></a></li>
+        <li data-tooltip="Quản lý Lớp học"><a href="/admin-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
+        <li data-tooltip="Hệ thống & Cài đặt"><a href="/admin-settings.html"><i class="fa-solid fa-gears"></i></a></li>
+        <li class="active" data-tooltip="Báo cáo thống kê"><a href="/admin-reports.html"><i class="fa-solid fa-chart-line"></i></a></li>
+    </ul>
+</div>
+
+<!-- Main Container -->
+<div class="main-container">
+    <div class="header">
+        <div class="header-title">Báo cáo & Thống kê Hệ thống</div>
+
+        <div class="header-right">
+            <div class="notification-icon" onclick="alert('Không có cảnh báo hệ thống mới!')" title="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge">1</span>
+            </div>
+
+            <div class="user-profile-wrapper" id="profileWrapper">
+                <div class="avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <div class="name" id="userName">Quản trị viên</div>
+                    <div class="role">System Admin</div>
+                </div>
+
+                <div class="dropdown-menu-custom" id="dropdownMenu">
+                    <a href="/admin-profile.html" class="dropdown-item"><i class="fa-regular fa-user"></i> Tài khoản Admin</a>
+                    <a href="/teacher-dashboard.html" class="dropdown-item"><i class="fa-solid fa-right-left"></i> Chuyển sang màn Giáo viên</a>
+                    <a href="#" class="dropdown-item" id="darkModeToggle"><i class="fa-regular fa-moon" id="darkModeIcon"></i> <span id="darkModeText">Chế độ tối</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="localStorage.clear(); window.location.href='/login.html'; return false;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Thẻ thống kê tổng quan -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="repTotalUsers">0</div>
+                    <div class="stat-label">Tổng người dùng</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #10b981;"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="repTotalClasses">0</div>
+                    <div class="stat-label">Tổng số lớp học</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #f59e0b;"><i class="fa-solid fa-file-signature"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="repTotalExams">0</div>
+                    <div class="stat-label">Đề thi trên hệ thống</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #8b5cf6;"><i class="fa-solid fa-square-poll-vertical"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="repTotalSubmissions">0</div>
+                    <div class="stat-label">Lượt nộp bài kiểm tra</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hàng 1: Cơ cấu người dùng + Phổ điểm chi tiết -->
+        <div class="charts-row-2col">
+            <div class="chart-card">
+                <div class="chart-title"><i class="fa-solid fa-chart-pie" style="color: #3b82f6; margin-right: 8px;"></i> Phân bổ cơ cấu người dùng</div>
+                <div class="chart-container">
+                    <canvas id="userRoleChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title"><i class="fa-solid fa-chart-simple" style="color: #10b981; margin-right: 8px;"></i> Phổ điểm bài thi chi tiết (1.0 - 10.0)</div>
+                <div class="chart-container">
+                    <canvas id="examScoreChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hàng 2: 2 Biểu đồ đường (Lượt nộp bài theo ngày & Phân bố điểm số) -->
+        <div class="charts-row-equal">
+            <!-- Biểu đồ 1: Lượt nộp theo ngày trong tháng -->
+            <div class="chart-card">
+                <div class="chart-title" id="dailyTrendTitle"><i class="fa-solid fa-arrow-trend-up" style="color: #f97316; margin-right: 8px;"></i> Lượt nộp bài theo ngày trong tháng</div>
+                <div class="chart-container">
+                    <canvas id="dailyTrendChart"></canvas>
+                </div>
+            </div>
+            <!-- Biểu đồ 2: Đường phân bố điểm số -->
+            <div class="chart-card">
+                <div class="chart-title"><i class="fa-solid fa-chart-line" style="color: #06b6d4; margin-right: 8px;"></i> Đường phân bố điểm số học sinh (1.0 - 10.0)</div>
+                <div class="chart-container">
+                    <canvas id="scoreLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hàng 3: Biểu đồ đường Số lượng người dùng mới tham gia theo 12 tháng -->
+        <div class="chart-card">
+            <div class="chart-title"><i class="fa-solid fa-user-plus" style="color: #8b5cf6; margin-right: 8px;"></i> Xu hướng người dùng mới tham gia hệ thống qua 12 tháng</div>
+            <div class="chart-container" style="height: 250px;">
+                <canvas id="userTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Bảng danh sách kết quả thi gần đây -->
+        <div class="management-card">
+            <div class="card-header-flex">
+                <div class="card-title">Kết quả làm bài thi gần đây của Học sinh</div>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Mã bài nộp</th>
+                    <th>Họ và tên Học sinh</th>
+                    <th>Đề thi</th>
+                    <th>Điểm số</th>
+                    <th>Thời gian nộp bài</th>
+                </tr>
+                </thead>
+                <tbody id="recentSubmissionsBody">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-sub);">Đang tải dữ liệu báo cáo...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let userRoleChartInstance = null;
+    let examScoreChartInstance = null;
+    let dailyTrendChartInstance = null;
+    let scoreLineChartInstance = null;
+    let userTrendChartInstance = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        const userRole = (localStorage.getItem('role') || '').toUpperCase();
+        if (!userRole || !userRole.includes('ADMIN')) {
+            alert('Bạn không có quyền truy cập trang này!');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        let displayName = localStorage.getItem('fullName') || 'Quản trị viên';
+        document.getElementById('userName').textContent = displayName;
+
+        const userAvatarEl = document.getElementById('userAvatar');
+        userAvatarEl.textContent = displayName.trim().charAt(0).toUpperCase();
+
+        const darkModeStatus = localStorage.getItem('darkMode');
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (darkModeStatus === 'enabled') {
+            document.body.classList.add('dark-mode');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            document.body.classList.remove('dark-mode');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+
+        await loadReportsData();
+    });
+
+    async function loadReportsData() {
+        try {
+            const res = await fetch('/api/admin/reports-data');
+            if (res.ok) {
+                const data = await res.json();
+
+                // 1. Cập nhật thẻ thống kê
+                document.getElementById('repTotalUsers').textContent = data.totalUsers || 0;
+                document.getElementById('repTotalClasses').textContent = data.totalClasses || 0;
+                document.getElementById('repTotalExams').textContent = data.totalExams || 0;
+                document.getElementById('repTotalSubmissions').textContent = data.totalSubmissions || 0;
+
+                // 2. Tiêu đề tháng
+                const month = data.currentMonth || (new Date().getMonth() + 1);
+                const year = data.currentYear || new Date().getFullYear();
+                document.getElementById('dailyTrendTitle').innerHTML = `<i class="fa-solid fa-arrow-trend-up" style="color: #f97316; margin-right: 8px;"></i> Lượt nộp bài trong Tháng ${month}/${year}`;
+
+                // 3. Biểu đồ vai trò
+                renderUserChart(data.countAdmin || 0, data.countTeacher || 0, data.countStudent || 0);
+
+                // 4. Biểu đồ cột phổ điểm (1.0 - 10.0)
+                const scoresArray = data.scoresDistribution || new Array(19).fill(0);
+                renderScoreDistributionChart(scoresArray);
+
+                // 5. Biểu đồ lượt nộp theo ngày (sắc nét)
+                const daysInMonth = data.daysInMonth || 31;
+                const dailyTrend = data.dailyTrend || new Array(daysInMonth).fill(0);
+                renderDailyTrendChart(dailyTrend, daysInMonth);
+
+                // 6. Biểu đồ đường phân bố điểm (sắc nét)
+                renderScoreLineChart(scoresArray);
+
+                // 7. Biểu đồ đường số người tham gia theo 12 tháng (màu tím sắc nét)
+                const monthlyUserTrend = data.monthlyUserTrend || new Array(12).fill(0);
+                renderUserTrendChart(monthlyUserTrend);
+
+                // 8. Bảng kết quả làm bài
+                renderRecentSubmissions(data.recentSubmissions || []);
+            }
+        } catch (e) {
+            console.error("Lỗi khi tải báo cáo:", e);
+        }
+    }
+
+    function renderUserChart(adminCount, teacherCount, studentCount) {
+        const ctx = document.getElementById('userRoleChart').getContext('2d');
+        if (userRoleChartInstance) userRoleChartInstance.destroy();
+
+        userRoleChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Admin', 'Giáo viên', 'Học sinh'],
+                datasets: [{
+                    data: [adminCount, teacherCount, studentCount],
+                    backgroundColor: ['#ef4444', '#3b82f6', '#10b981'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+                }
+            }
+        });
+    }
+
+    function renderScoreDistributionChart(scoresArray) {
+        const ctx = document.getElementById('examScoreChart').getContext('2d');
+        if (examScoreChartInstance) examScoreChartInstance.destroy();
+
+        const labels = [
+            '1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0',
+            '5.5', '6.0', '6.5', '7.0', '7.5', '8.0', '8.5', '9.0', '9.5', '10.0'
+        ];
+
+        examScoreChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượng bài thi',
+                    data: scoresArray,
+                    backgroundColor: function(context) {
+                        const val = parseFloat(labels[context.dataIndex]);
+                        if (val >= 8.0) return '#10b981';
+                        if (val >= 6.5) return '#3b82f6';
+                        if (val >= 5.0) return '#f59e0b';
+                        return '#ef4444';
+                    },
+                    borderRadius: 3,
+                    barThickness: 10,
+                    maxBarThickness: 14
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    // Biểu đồ 1: Số lượt nộp bài theo từng ngày (sắc nét)
+    function renderDailyTrendChart(dailyArray, totalDays) {
+        const ctx = document.getElementById('dailyTrendChart').getContext('2d');
+        if (dailyTrendChartInstance) dailyTrendChartInstance.destroy();
+
+        const labels = [];
+        for (let i = 1; i <= totalDays; i++) {
+            labels.push(`Ng.${i}`);
+        }
+
+        dailyTrendChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Lượt nộp',
+                    data: dailyArray,
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249, 115, 22, 0.12)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#ea580c',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 1.5,
+                    pointRadius: 3.5,
+                    pointHoverRadius: 6,
+                    tension: 0,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) { return ` Nộp bài: ${context.parsed.y} lượt`; }
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { font: { size: 9 }, maxTicksLimit: 16 } }
+                }
+            }
+        });
+    }
+
+    // Biểu đồ 2: Đường phân bố điểm số (sắc nét)
+    function renderScoreLineChart(scoresArray) {
+        const ctx = document.getElementById('scoreLineChart').getContext('2d');
+        if (scoreLineChartInstance) scoreLineChartInstance.destroy();
+
+        const labels = [
+            '1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0',
+            '5.5', '6.0', '6.5', '7.0', '7.5', '8.0', '8.5', '9.0', '9.5', '10.0'
+        ];
+
+        scoreLineChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượng bài thi',
+                    data: scoresArray,
+                    borderColor: '#06b6d4',
+                    backgroundColor: 'rgba(6, 182, 212, 0.15)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#0891b2',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 1.5,
+                    pointRadius: 3.5,
+                    pointHoverRadius: 6,
+                    tension: 0,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) { return ` Số bài thi: ${context.parsed.y} bài`; }
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    // Biểu đồ 3: Số người tham gia (màu tím sắc nét qua 12 tháng)
+    function renderUserTrendChart(userArray) {
+        const ctx = document.getElementById('userTrendChart').getContext('2d');
+        if (userTrendChartInstance) userTrendChartInstance.destroy();
+
+        const labels = ['Th.1', 'Th.2', 'Th.3', 'Th.4', 'Th.5', 'Th.6', 'Th.7', 'Th.8', 'Th.9', 'Th.10', 'Th.11', 'Th.12'];
+
+        userTrendChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số người tham gia mới',
+                    data: userArray,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.12)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#7c3aed',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 1.5,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) { return ` Người dùng mới: ${context.parsed.y} thành viên`; }
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    function renderRecentSubmissions(list) {
+        const tbody = document.getElementById('recentSubmissionsBody');
+        tbody.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-sub); padding: 25px;">Chưa có lượt nộp bài thi nào trong hệ thống.</td></tr>';
+            return;
+        }
+
+        list.forEach((item) => {
+            const id = item.id_exam_submissions || item.idExamSubmissions || item.id || '---';
+            const student = item.student_name || item.studentName || item.full_name || 'Học sinh';
+            const exam = item.exam_name || item.exam_title || item.examTitle || 'Kiểm tra trực tuyến';
+
+            const rawScore = item.score !== undefined && item.score !== null ? Number(item.score) : 0;
+            const scoreStr = rawScore.toFixed(1);
+
+            let timeStr = 'Vừa xong';
+            const rawTime = item.submitted_at || item.submit_time || item.created_at;
+            if (rawTime) {
+                const s = String(rawTime).replace('T', ' ');
+                if (s.length >= 10) {
+                    const datePart = s.substring(0, 10);
+                    const timePart = s.length >= 19 ? s.substring(11, 19) : (s.length > 10 ? s.substring(11) : '');
+                    const dp = datePart.split('-');
+                    if (dp.length === 3) {
+                        timeStr = `${dp[2]}/${dp[1]}/${dp[0]} ${timePart}`.trim();
+                    } else {
+                        timeStr = s;
+                    }
+                } else {
+                    timeStr = s;
+                }
+            }
+
+            const badgeClass = (rawScore >= 5.0) ? 'badge-high' : 'badge-low';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>#${id}</td>
+                    <td style="font-weight: 600;">${student}</td>
+                    <td style="font-weight: 500; color: #1e3c72;">${exam}</td>
+                    <td><span class="badge-score ${badgeClass}">${scoreStr} đ</span></td>
+                    <td>${timeStr}</td>
+                </tr>
+            `;
+        });
+    }
+
+    const profileWrapper = document.getElementById('profileWrapper');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
+    profileWrapper.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+    });
+
+    window.addEventListener('click', function() {
+        if (dropdownMenu.classList.contains('show')) {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.toggle('dark-mode');
+
+        const icon = document.getElementById('darkModeIcon');
+        const text = document.getElementById('darkModeText');
+
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            text.textContent = 'Chế độ sáng';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            text.textContent = 'Chế độ tối';
+        }
+    });
+</script>
+</body>
+</html>

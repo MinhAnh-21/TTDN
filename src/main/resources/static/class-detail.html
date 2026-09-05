@@ -170,7 +170,6 @@
 
         .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 
-        /* Modal chung */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; }
         .modal.show { display: flex; }
         .modal-content { background: var(--bg-card); padding: 30px; border-radius: 14px; width: 500px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -189,7 +188,7 @@
     <ul class="sidebar-menu">
         <li data-tooltip="Màn hình chính"><a href="/teacher-dashboard.html"><i class="fa-solid fa-house"></i></a></li>
         <li data-tooltip="Quản lý Bài tập"><a href="/teacher-add-assignment.html"><i class="fa-solid fa-file-lines"></i></a></li>
-        <li data-tooltip="Quản lý Đề thi"><a href="#"><i class="fa-solid fa-folder-open"></i></a></li>
+        <li data-tooltip="Quản lý Đề thi"><a href="/teacher-exams.html"><i class="fa-solid fa-folder-open"></i></a></li>
         <li class="active" data-tooltip="Quản lý Lớp học"><a href="/teacher-classes.html"><i class="fa-solid fa-layer-group"></i></a></li>
         <li data-tooltip="Quản lý Học sinh"><a href="/teacher-students.html"><i class="fa-solid fa-users"></i></a></li>
         <li data-tooltip="Ngân hàng câu hỏi"><a href="#"><i class="fa-solid fa-book"></i></a></li>
@@ -237,8 +236,11 @@
             <div class="sub-menu-item active" onclick="switchTab('students', this, 'Danh sách học sinh')">
                 <i class="fa-solid fa-users"></i> Danh sách học sinh
             </div>
-            <div class="sub-menu-item" onclick="switchTab('assignments', this, 'Bài tập, đề thi')">
-                <i class="fa-solid fa-file-lines"></i> Bài tập, đề thi
+            <div class="sub-menu-item" onclick="switchTab('assignments', this, 'Bài tập')">
+                <i class="fa-solid fa-file-lines"></i> Bài tập
+            </div>
+            <div class="sub-menu-item" onclick="switchTab('exams', this, 'Đề thi')">
+                <i class="fa-solid fa-folder-open"></i> Đề thi
             </div>
             <div class="sub-menu-item" onclick="switchTab('news', this, 'Bảng tin')">
                 <i class="fa-solid fa-bullhorn"></i> Bảng tin
@@ -287,24 +289,24 @@
                 </div>
             </div>
 
-            <!-- TAB 2: BÀI TẬP, ĐỀ THI -->
+            <!-- TAB 2: BÀI TẬP RIÊNG CỦA LỚP -->
             <div id="tabAssignments" class="tab-pane">
                 <div class="table-toolbar" style="margin-bottom: 20px;">
                     <a href="#" id="btnAddAssignment" class="btn-primary-action">
-                        <i class="fa-solid fa-plus"></i> Giao bài mới
+                        <i class="fa-solid fa-plus"></i> Giao bài tập mới
                     </a>
                 </div>
 
                 <div class="empty-box" id="emptyAssignmentBox">
                     <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
-                    <p>Chưa có bài tập, đề thi nào được giao cho lớp này!</p>
+                    <p>Chưa có bài tập nào được giao cho lớp này!</p>
                 </div>
 
                 <div id="assignmentTableContainer" style="display: none;">
                     <table style="width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 8px; overflow: hidden;">
                         <thead>
                         <tr style="background: rgba(59,130,246,0.1); text-align: left;">
-                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Tên bài tập</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main); width: 30%;">Tên bài tập</th>
                             <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Mô tả chi tiết</th>
                             <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Hạn nộp</th>
                             <th style="padding: 12px; font-size: 14px; color: var(--text-main); text-align: center;">Hành động</th>
@@ -315,7 +317,31 @@
                 </div>
             </div>
 
-            <!-- TAB 3: BẢNG TIN -->
+            <!-- TAB 3: ĐỀ THI RIÊNG ĐƯỢC GIAO CHO LỚP -->
+            <div id="tabExams" class="tab-pane">
+                <div class="empty-box" id="emptyExamBox">
+                    <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                    <p>Chưa có đề thi nào được giao cho lớp này!</p>
+                </div>
+
+                <div id="examTableContainer" style="display: none; margin-top: 10px;">
+                    <table style="width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 8px; overflow: hidden;">
+                        <thead>
+                        <tr style="background: rgba(59,130,246,0.1); text-align: left;">
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main); width: 30%;">Tên kỳ thi / Đề thi</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Loại đề thi</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Thời lượng</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Bắt đầu</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main);">Kết thúc</th>
+                            <th style="padding: 12px; font-size: 14px; color: var(--text-main); text-align: center;">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="examTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: BẢNG TIN -->
             <div id="tabNews" class="tab-pane">
                 <div class="empty-box">
                     <div class="empty-icon"><i class="fa-solid fa-bullhorn"></i></div>
@@ -323,7 +349,7 @@
                 </div>
             </div>
 
-            <!-- TAB 4: BẢNG ĐIỂM -->
+            <!-- TAB 5: BẢNG ĐIỂM -->
             <div id="tabScores" class="tab-pane">
                 <div class="empty-box">
                     <div class="empty-icon"><i class="fa-solid fa-table-list"></i></div>
@@ -355,6 +381,7 @@
     let currentClassName = "";
     let classStudents = [];
     let currentAssignments = [];
+    let currentExams = [];
 
     window.addEventListener('DOMContentLoaded', async () => {
         let displayName = localStorage.getItem('fullName') || 'Nguyễn Văn Minh';
@@ -382,12 +409,12 @@
             text.textContent = 'Chế độ sáng';
         }
 
-        // Tự động chuyển về tab Bài tập, đề thi nếu URL có chứa #assignments
         if (window.location.hash === '#assignments') {
             const assignmentTabBtn = document.querySelectorAll('.class-sidebar-sub .sub-menu-item')[1];
-            if (assignmentTabBtn) {
-                switchTab('assignments', assignmentTabBtn, 'Bài tập, đề thi');
-            }
+            if (assignmentTabBtn) switchTab('assignments', assignmentTabBtn, 'Bài tập');
+        } else if (window.location.hash === '#exams') {
+            const examTabBtn = document.querySelectorAll('.class-sidebar-sub .sub-menu-item')[2];
+            if (examTabBtn) switchTab('exams', examTabBtn, 'Đề thi');
         }
 
         if (classId) {
@@ -404,7 +431,8 @@
                 }
 
                 await loadClassStudentsFromDB();
-                loadAssignmentsFromDB();
+                await loadAssignmentsFromDB();
+                await loadExamsFromDB();
             } catch (err) {
                 console.error("Lỗi tải thông tin lớp:", err);
             }
@@ -436,7 +464,7 @@
             tableContainer.style.display = 'block';
             tbody.innerHTML = '';
             assignments.forEach(a => {
-                const assignmentId = a.idAssignments || a.id;
+                const assignmentId = a.idAssignments || a.id_assignments || a.idAssignment || a.id;
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid var(--border-color);">
                         <td style="padding: 12px; color: var(--text-main); font-weight: 500;">${a.title}</td>
@@ -456,7 +484,70 @@
         }
     }
 
-    // Chuyển hướng sang trang chấm bài riêng biệt
+    async function loadExamsFromDB() {
+        try {
+            const res = await fetch(`/api/classes/${classId}/exams`);
+            if (res.ok) {
+                currentExams = await res.json();
+                renderExams(currentExams);
+            }
+        } catch (err) {
+            console.error("Lỗi tải đề thi của lớp:", err);
+        }
+    }
+
+    function renderExams(exams) {
+        const emptyBox = document.getElementById('emptyExamBox');
+        const tableContainer = document.getElementById('examTableContainer');
+        const tbody = document.getElementById('examTableBody');
+
+        if (!exams || exams.length === 0) {
+            emptyBox.style.display = 'block';
+            tableContainer.style.display = 'none';
+        } else {
+            emptyBox.style.display = 'none';
+            tableContainer.style.display = 'block';
+            tbody.innerHTML = '';
+            exams.forEach(ex => {
+                const exId = ex.idExams || ex.id_exams || ex.id;
+                const examName = ex.examName || ex.exam_name || 'Đề thi';
+                const rawType = (ex.examType || ex.exam_type || '').toUpperCase();
+
+                let typeText = 'Thi giữa kỳ';
+                if (rawType.includes('15') || examName.toLowerCase().includes('15 phút') || examName.toLowerCase().includes('15p')) {
+                    typeText = 'Thi 15 phút';
+                } else if (rawType.includes('FINAL') || rawType.includes('CUOI') || examName.toLowerCase().includes('cuối kỳ')) {
+                    typeText = 'Thi cuối kỳ';
+                } else if (rawType.includes('MID') || rawType.includes('GIUA') || examName.toLowerCase().includes('giữa kỳ')) {
+                    typeText = 'Thi giữa kỳ';
+                }
+
+                let duration = ex.durationMinutes || ex.duration_minutes;
+                if (!duration || (typeText === 'Thi 15 phút' && duration > 15)) {
+                    duration = (typeText === 'Thi 15 phút') ? 15 : 45;
+                }
+
+                const start = ex.startTime ? ex.startTime.replace('T', ' ') : (ex.start_time ? ex.start_time.replace('T', ' ') : '-');
+                const end = ex.endTime ? ex.endTime.replace('T', ' ') : (ex.end_time ? ex.end_time.replace('T', ' ') : '-');
+
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px; color: var(--text-main); font-weight: 500;">${examName}</td>
+                        <td style="padding: 12px; color: var(--text-sub);">${typeText}</td>
+                        <td style="padding: 12px; color: var(--text-sub); font-size: 13px;">${duration} phút</td>
+                        <td style="padding: 12px; color: var(--text-sub); font-size: 13px;">${start}</td>
+                        <td style="padding: 12px; color: var(--text-sub); font-size: 13px;">${end}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <a href="/teacher-exam-results.html?classId=${classId}&examId=${exId}" class="btn-primary-action" style="padding: 6px 12px; font-size: 12px; background: #10b981; text-decoration: none;" title="Kết quả thi">
+                                <i class="fa-solid fa-eye"></i> Kết quả thi
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    }
+
     function goToGradingPage(assignmentId) {
         window.location.href = `/teacher-grading.html?classId=${classId}&assignmentId=${assignmentId}`;
     }
@@ -598,6 +689,8 @@
             document.getElementById('tabStudents').classList.add('active');
         } else if (tabName === 'assignments') {
             document.getElementById('tabAssignments').classList.add('active');
+        } else if (tabName === 'exams') {
+            document.getElementById('tabExams').classList.add('active');
         } else if (tabName === 'news') {
             document.getElementById('tabNews').classList.add('active');
         } else if (tabName === 'scores') {
